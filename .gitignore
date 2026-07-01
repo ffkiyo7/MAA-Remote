@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# 机器专属运行配置（含本机绝对路径）；模板 config.example.toml 保留跟踪
+config.toml
+
+# 环境
+.env

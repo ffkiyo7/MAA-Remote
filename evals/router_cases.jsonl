@@ -1,0 +1,18 @@
+{"input":"跑一下日常","expected":{"action":"run","startup":true,"recruit":{"enable":true,"max_times":4},"infrast":{"enable":true},"mall":{"enable":true},"award":{"enable":true},"fight":{"enable":true,"stage":"","expiring_medicine":true,"medicine":0,"stone":0}}}
+{"input":"日常","expected":{"action":"run","startup":true,"recruit":{"enable":true},"infrast":{"enable":true},"mall":{"enable":true},"award":{"enable":true},"fight":{"enable":true,"stage":"","stone":0}}}
+{"input":"托管一下明日方舟","expected":{"action":"run","startup":true,"recruit":{"enable":true},"infrast":{"enable":true},"mall":{"enable":true},"award":{"enable":true},"fight":{"enable":true,"stone":0}}}
+{"input":"帮我打 CE-6 三次，公招就别做了","expected":{"action":"run","recruit":{"enable":false},"fight":{"enable":true,"stage":"CE-6","times":3,"stone":0,"medicine":0}}}
+{"input":"就刷个理智，其他都不用","expected":{"action":"run","recruit":{"enable":false},"infrast":{"enable":false},"mall":{"enable":false},"award":{"enable":false},"fight":{"enable":true,"stage":"","stone":0,"medicine":0}}}
+{"input":"跑日常但别做基建","expected":{"action":"run","startup":true,"recruit":{"enable":true},"infrast":{"enable":false},"mall":{"enable":true},"award":{"enable":true},"fight":{"enable":true,"stone":0}}}
+{"input":"信用商店别买了，其他日常照跑","expected":{"action":"run","startup":true,"recruit":{"enable":true},"infrast":{"enable":true},"mall":{"enable":false},"award":{"enable":true},"fight":{"enable":true,"stone":0}}}
+{"input":"刷这期活动的代币","expected":{"action":"ask_stage_selection"}}
+{"input":"帮我刷点当期新出的关卡","expected":{"action":"ask_stage_selection"}}
+{"input":"活动关卡 UR-8 打五次","expected":{"action":"run","fight":{"enable":true,"stage":"UR-8","times":5,"stone":0,"medicine":0}}}
+{"input":"把囤的理智药也用掉，一直刷 1-7","expected":{"action":"run","fight":{"enable":true,"stage":"1-7","expiring_medicine":true,"medicine":999,"stone":0}}}
+{"input":"碎 50 颗源石刷 UR-8","expected":{"action":"run","fight":{"enable":true,"stage":"UR-8","stone":50,"medicine":0}}}
+{"input":"只做公招和信用","expected":{"action":"run","recruit":{"enable":true},"mall":{"enable":true},"infrast":{"enable":false},"award":{"enable":false},"fight":{"enable":false}}}
+{"input":"公招只做两次就行","expected":{"action":"run","recruit":{"enable":true,"max_times":2}}}
+{"input":"今天天气怎么样","expected":{"action":"reject"}}
+{"input":"帮我写个 Python 脚本","expected":{"action":"reject"}}
+{"input":"帮我弄一下","expected":{"action":"clarify"}}
+{"input":"搞快点","expected":{"action":"clarify"}}

@@ -1,0 +1,48 @@
+# MAA_remote 配置模板 —— 复制为 config.toml 后按本机实测值填写。
+# 换机必改：[maa] 各路径、[emulator] 路径/端口。用 SPEC.md §0 的方法重扫。
+# DeepSeek key 不写这里，设为环境变量 DEEPSEEK_API_KEY。
+
+[lark]
+allowed_sender_open_id = ""      # 留空=自动锁定当机 lark-cli 登录者（推荐，换账号零改）
+app_id                 = ""      # 留空=用 lark-cli 当前应用；多应用时填 appId
+identity               = "auto"
+event_key              = "im.message.receive_v1"
+
+[llm]
+provider            = "deepseek"
+model               = "deepseek-chat"
+base_url            = "https://api.deepseek.com"
+api_key_env         = "DEEPSEEK_API_KEY"
+request_timeout_s   = 30
+max_retries         = 1
+cache_system_prompt = true
+
+[maa]
+maa_cli_path        = "%LOCALAPPDATA%/Programs/maa-cli/maa.exe"   # maa.exe 路径
+core_dir            = "<MAA GUI 目录，含 MaaCore.dll>"
+resource_dir        = "<MAA GUI 目录>/resource"
+stage_activity_json = "%LOCALAPPDATA%/loong/maa/cache/StageActivityV2.json"
+client              = "Official"                                 # 区服：Official/Bilibili/YoStarEN/...
+hot_update_before_catalog = true
+daily_tasks         = ["startup", "recruit", "infrast", "mall", "award"]
+
+[maa.fight]
+stage             = ""
+expiring_medicine = true
+medicine          = 0
+stone             = 0
+
+[emulator]
+kind           = "mumu"                       # mumu/leidian/bluestacks
+vmindex        = 0
+launch_cmd     = '<模拟器管理器> control -v 0 launch'
+shutdown_cmd   = '<模拟器管理器> control -v 0 shutdown'
+adb_path       = '<模拟器目录>/adb.exe'
+adb_serial     = "127.0.0.1:16384"            # MuMu12 实例0 默认；查 vm_config.json 的 port_forward.adb
+boot_timeout_s = 120
+close_after    = false
+
+[runtime]
+busy_reply      = "正在跑中，稍等 🐢"
+ack_reply       = "🟡 收到，开始跑日常…"
+selection_ttl_s = 300

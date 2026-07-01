@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maa-remote/schemas/task_plan.schema.json",
+  "title": "TaskPlan",
+  "description": "意图识别（DeepSeek）输出的结构化任务计划。Router 用本 schema 强校验；非法则带错误信息重试一次。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["run", "ask_stage_selection", "clarify", "reject"],
+      "description": "run=直接执行；ask_stage_selection=想刷活动但没定具体关，触发关卡菜单；clarify=意图不清需追问；reject=非任务/超范围，礼貌拒答"
+    },
+    "startup": {
+      "type": "boolean",
+      "description": "开局：唤醒并进入主界面（含收邮件）。跑日常默认 true"
+    },
+    "recruit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enable": { "type": "boolean" },
+        "max_times": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "description": "公开招募次数上限，默认 4"
+        }
+      },
+      "required": ["enable"]
+    },
+    "infrast": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "enable": { "type": "boolean" } },
+      "required": ["enable"],
+      "description": "基建换班 + 领日常奖励"
+    },
+    "mall": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "enable": { "type": "boolean" } },
+      "required": ["enable"],
+      "description": "信用商店"
+    },
+    "award": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "enable": { "type": "boolean" } },
+      "required": ["enable"],
+      "description": "领取日常/周常奖励"
+    },
+    "fight": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enable": { "type": "boolean" },
+        "stage": {
+          "type": "string",
+          "description": "关卡号；空串=当前/上次关卡。活动关卡（如 UR-8）若用户没明确给出，应改用 action=ask_stage_selection 而不是在此瞎填"
+        },
+        "times": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "作战次数；缺省则由 MAA 按理智自动决定"
+        },
+        "expiring_medicine": {
+          "type": "boolean",
+          "description": "只吃即将过期的理智药（揉揉乐）。默认 true"
+        },
+        "medicine": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "动用囤积理智药的数量。默认 0（不动囤药）。仅用户明确要求时才 >0"
+        },
+        "stone": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "碎石数量。默认 0（绝不碎石）。仅用户明确要求碎石时才 >0"
+        }
+      },
+      "required": ["enable"]
+    },
+    "clarify_question": {
+      "type": "string",
+      "description": "action=clarify 时，回给用户的追问"
+    },
+    "note": {
+      "type": "string",
+      "description": "对用户原始意图的简短复述，供 Reporter 润色汇报时参考"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "action": { "const": "clarify" } } },
+      "then": { "required": ["action", "clarify_question"] }
+    }
+  ]
+}
