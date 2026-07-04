@@ -74,10 +74,20 @@ def handle_message(
 
 def _auth_status() -> dict:
     result = run_utf8(["lark-cli", "auth", "status"], timeout=30)
+    return _parse_auth_status_output(result.stdout)
+
+
+def _parse_auth_status_output(stdout: str) -> dict:
     try:
-        return json.loads(result.stdout)
+        data = json.loads(stdout)
     except json.JSONDecodeError:
         return {}
+    if data.get("userOpenId"):
+        return data
+    user_open_id = data.get("identities", {}).get("user", {}).get("openId")
+    if user_open_id:
+        return {**data, "userOpenId": user_open_id}
+    return data
 
 
 def main(config_path: str = "config.toml") -> None:

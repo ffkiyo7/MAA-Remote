@@ -1,7 +1,7 @@
 import threading
 import shutil
 
-from maa_remote.__main__ import handle_message, setup_logging
+from maa_remote.__main__ import _parse_auth_status_output, handle_message, setup_logging
 from maa_remote.config import load_config
 from maa_remote.models import ExecResult, Fight, Msg, RouteResult, TaskPlan
 
@@ -63,6 +63,19 @@ def _runner_recording(sent):
 def test_setup_logging_creates_log_directory(tmp_path):
     setup_logging(str(tmp_path / "logs" / "maa_remote.log"))
     assert (tmp_path / "logs").is_dir()
+
+
+def test_parse_auth_status_output_supports_lark_cli_nested_user_open_id():
+    raw = (
+        '{"identities":{"user":{"openId":"ou_nested"},"bot":{"status":"ready"}},'
+        '"identity":"user"}'
+    )
+    assert _parse_auth_status_output(raw)["userOpenId"] == "ou_nested"
+
+
+def test_parse_auth_status_output_preserves_top_level_user_open_id():
+    raw = '{"userOpenId":"ou_top"}'
+    assert _parse_auth_status_output(raw) == {"userOpenId": "ou_top"}
 
 
 def test_reply_only_sends_and_does_not_execute(tmp_path):
