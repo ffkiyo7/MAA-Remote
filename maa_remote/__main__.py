@@ -10,7 +10,7 @@ from maa_remote.config import Config, load_config, resolve_allowed_sender
 from maa_remote.executor import execute as execute_task
 from maa_remote.listener import listen
 from maa_remote.llm import LLMClient
-from maa_remote.procutil import run_utf8
+from maa_remote.procutil import resolve_executable, run_utf8
 from maa_remote.reporter import report, send_reply
 from maa_remote.router import Router
 from maa_remote.stage_catalog import hot_update
@@ -73,7 +73,7 @@ def handle_message(
 
 
 def _auth_status() -> dict:
-    result = run_utf8(["lark-cli", "auth", "status"], timeout=30)
+    result = run_utf8([resolve_executable("lark-cli"), "auth", "status"], timeout=30)
     return _parse_auth_status_output(result.stdout)
 
 

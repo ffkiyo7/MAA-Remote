@@ -121,7 +121,8 @@ def test_listen_builds_lark_cli_command(tmp_path):
         return FakeProc()
 
     next(listen(cfg, "ou_1", spawn=spawn, sleep=lambda s: None))
-    assert captured["cmd"][:4] == ["lark-cli", "event", "consume", "im.message.receive_v1"]
+    assert captured["cmd"][1:4] == ["event", "consume", "im.message.receive_v1"]
+    assert "lark-cli" in captured["cmd"][0].lower()
     assert "--as" in captured["cmd"]
     assert "--quiet" in captured["cmd"]
     assert "--format" not in captured["cmd"]

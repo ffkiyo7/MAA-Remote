@@ -8,6 +8,7 @@ from collections.abc import Iterator
 
 from maa_remote.config import Config
 from maa_remote.models import Msg
+from maa_remote.procutil import resolve_executable
 
 
 log = logging.getLogger(__name__)
@@ -87,7 +88,7 @@ def listen(
 ) -> Iterator[Msg]:
     identity = "bot" if cfg.lark.identity in ("auto", "bot") else cfg.lark.identity
     cmd = [
-        "lark-cli",
+        resolve_executable("lark-cli"),
         "event",
         "consume",
         cfg.lark.event_key,

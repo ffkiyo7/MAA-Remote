@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from maa_remote.models import ExecResult, Msg
-from maa_remote.procutil import run_utf8
+from maa_remote.procutil import resolve_executable, run_utf8
 
 
 _POLISH_SYSTEM = (
@@ -41,7 +41,7 @@ def build_summary(result: ExecResult, note: str, llm) -> str:
 def send_reply(message_id: str, text: str, identity: str, runner=run_utf8) -> None:
     runner(
         [
-            "lark-cli",
+            resolve_executable("lark-cli"),
             "im",
             "+messages-reply",
             "--message-id",
