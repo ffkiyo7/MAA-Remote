@@ -79,8 +79,7 @@ def listen(
         cfg.lark.event_key,
         "--as",
         identity,
-        "--format",
-        "ndjson",
+        "--quiet",
     ]
     backoff_s = 1
 
