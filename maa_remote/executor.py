@@ -17,6 +17,7 @@ class EmulatorError(Exception):
 
 
 _EXPIRING_MEDICINE_ALL = 999
+_INFRAST_ONE_KEY_ROTATION_MODE = 20000
 
 
 def build_task_file(plan: TaskPlan, client: str) -> dict:
@@ -47,7 +48,7 @@ def build_task_file(plan: TaskPlan, client: str) -> dict:
             {
                 "type": "Infrast",
                 "params": {
-                    "mode": 0,
+                    "mode": _INFRAST_ONE_KEY_ROTATION_MODE,
                     "facility": [
                         "Mfg",
                         "Trade",

@@ -91,6 +91,8 @@ def test_build_task_file_daily_includes_toggled_tasks():
     task_file = build_task_file(plan, "Official")
     types = [task["type"] for task in task_file["tasks"]]
     assert types == ["StartUp", "Recruit", "Infrast", "Mall", "Award", "Fight"]
+    infrast = task_file["tasks"][2]
+    assert infrast["params"]["mode"] == 20000
     fight = task_file["tasks"][-1]
     assert fight["params"]["stage"] == ""
     assert fight["params"]["expiring_medicine"] == 999

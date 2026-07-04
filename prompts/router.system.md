@@ -20,7 +20,7 @@
 |---|---|---|---|
 | 开局 | `startup` (bool) | 唤醒游戏、进主界面、收邮件 | **恒 true**（见红线 6） |
 | 公招 | `recruit.enable` / `recruit.max_times` (0-4) | 公开招募 | enable=true, max_times=4 |
-| 基建 | `infrast.enable` (bool) | 换班 + 领日常奖励 | true |
+| 基建 | `infrast.enable` (bool) | 使用游戏内一键换班 + 领日常奖励 | true |
 | 信用 | `mall.enable` (bool) | 信用商店购物 | true |
 | 奖励 | `award.enable` (bool) | 领日常/周常奖励 | true |
 | 作战 | `fight.*` | 刷理智，见下 | 见"揉揉乐" |
