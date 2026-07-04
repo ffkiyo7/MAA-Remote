@@ -14,6 +14,26 @@ from maa_remote.procutil import resolve_executable
 log = logging.getLogger(__name__)
 
 
+def _extract_flat_sender_open_id(sender_id) -> str:
+    if isinstance(sender_id, dict):
+        return sender_id.get("open_id") or sender_id.get("openId") or ""
+    return str(sender_id or "")
+
+
+def _extract_flat_text(content) -> str:
+    if isinstance(content, dict):
+        return str(content.get("text", "")).strip()
+    text = str(content or "").strip()
+    if text.startswith("{"):
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            return text
+        if isinstance(parsed, dict):
+            return str(parsed.get("text", "")).strip()
+    return text
+
+
 def parse_event(
     obj: dict,
     allowed_sender: str,
@@ -39,8 +59,8 @@ def parse_event(
         message_type = message.get("message_type")
         create_time_raw = message.get("create_time", "0")
     else:
-        sender_open_id = obj.get("sender_id", "")
-        text = str(obj.get("content", "")).strip()
+        sender_open_id = _extract_flat_sender_open_id(obj.get("sender_id", ""))
+        text = _extract_flat_text(obj.get("content", ""))
         message_id = obj.get("message_id") or obj.get("id", "")
         chat_id = obj.get("chat_id", "")
         message_type = obj.get("message_type")
@@ -57,7 +77,7 @@ def parse_event(
     except (TypeError, ValueError):
         create_time = 0
 
-    if max_age_s > 0:
+    if max_age_s > 0 and create_time > 0:
         current_ms = int(time.time() * 1000) if now_ms is None else now_ms
         if current_ms - create_time > max_age_s * 1000:
             log.info(
@@ -66,6 +86,8 @@ def parse_event(
                 max_age_s,
             )
             return None
+    elif max_age_s > 0:
+        log.warning("消息 create_time 无法解析，跳过新鲜度过滤 message_id=%s", message_id)
 
     if not text:
         return None

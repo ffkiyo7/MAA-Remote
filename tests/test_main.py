@@ -78,6 +78,17 @@ def test_parse_auth_status_output_preserves_top_level_user_open_id():
     assert _parse_auth_status_output(raw) == {"userOpenId": "ou_top"}
 
 
+def test_parse_auth_status_output_handles_invalid_json():
+    assert _parse_auth_status_output("not json") == {}
+
+
+def test_parse_auth_status_output_handles_null_or_missing_user_identity():
+    assert _parse_auth_status_output('{"identities":null}') == {"identities": None}
+    assert _parse_auth_status_output('{"identities":{"bot":{"status":"ready"}}}') == {
+        "identities": {"bot": {"status": "ready"}}
+    }
+
+
 def test_reply_only_sends_and_does_not_execute(tmp_path):
     cfg = _cfg(tmp_path)
     sent, executed = [], []

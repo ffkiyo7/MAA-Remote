@@ -84,7 +84,9 @@ def _parse_auth_status_output(stdout: str) -> dict:
         return {}
     if data.get("userOpenId"):
         return data
-    user_open_id = data.get("identities", {}).get("user", {}).get("openId")
+    identities = data.get("identities") or {}
+    user = identities.get("user") or {}
+    user_open_id = user.get("openId")
     if user_open_id:
         return {**data, "userOpenId": user_open_id}
     return data

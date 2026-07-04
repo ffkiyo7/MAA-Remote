@@ -1,4 +1,5 @@
 import json
+import logging
 import shutil
 
 from maa_remote.config import load_config
@@ -54,12 +55,41 @@ def test_parse_event_extracts_lark_cli_flattened_event():
     assert msg.sender_open_id == "ou_1"
 
 
+def test_parse_event_extracts_flat_sender_dict_and_json_content():
+    msg = parse_event(
+        {
+            "type": "im.message.receive_v1",
+            "sender_id": {"open_id": "ou_1"},
+            "message_id": "om_9",
+            "chat_id": "oc_9",
+            "message_type": "text",
+            "create_time": "1720000000000",
+            "content": '{"text": "跑日常"}',
+        },
+        allowed_sender="ou_1",
+    )
+    assert msg.text == "跑日常"
+    assert msg.sender_open_id == "ou_1"
+
+
 def test_parse_event_filters_other_sender():
     assert parse_event(_event("hi", open_id="ou_other"), allowed_sender="ou_1") is None
 
 
 def test_parse_event_ignores_non_text():
     assert parse_event(_event("x", mtype="image"), allowed_sender="ou_1") is None
+    assert (
+        parse_event(
+            {
+                "type": "im.message.receive_v1",
+                "sender_id": "ou_1",
+                "message_type": "image",
+                "content": "x",
+            },
+            allowed_sender="ou_1",
+        )
+        is None
+    )
 
 
 def test_parse_event_ignores_non_message_events():
@@ -74,12 +104,58 @@ def test_parse_event_drops_stale_message():
     assert parse_event(event, "ou_1", max_age_s=0, now_ms=base + 999_000) is not None
 
 
+def test_parse_event_skips_staleness_filter_when_time_unparseable(caplog):
+    caplog.set_level(logging.WARNING)
+    event = {
+        "type": "im.message.receive_v1",
+        "sender_id": "ou_1",
+        "message_id": "om_9",
+        "chat_id": "oc_9",
+        "message_type": "text",
+        "create_time": "2026-07-04T20:27:11+08:00",
+        "content": "跑日常",
+    }
+    msg = parse_event(event, "ou_1", max_age_s=300, now_ms=1720000000000)
+    assert msg is not None
+    assert msg.create_time == 0
+    assert "跳过新鲜度过滤" in caplog.text
+
+
+def test_parse_event_drops_flattened_stale_message():
+    base = 1720000000000
+    event = {
+        "type": "im.message.receive_v1",
+        "sender_id": "ou_1",
+        "message_id": "om_9",
+        "chat_id": "oc_9",
+        "message_type": "text",
+        "create_time": str(base),
+        "content": "跑日常",
+    }
+    assert parse_event(event, "ou_1", max_age_s=300, now_ms=base + 301_000) is None
+
+
 def test_parse_event_ignores_invalid_or_empty_content():
     event = _event("跑日常")
     event["event"]["message"]["content"] = "not json"
     assert parse_event(event, "ou_1") is None
     event["event"]["message"]["content"] = '{"text": "   "}'
     assert parse_event(event, "ou_1") is None
+    assert (
+        parse_event(
+            {
+                "type": "im.message.receive_v1",
+                "sender_id": "ou_1",
+                "message_id": "om_9",
+                "chat_id": "oc_9",
+                "message_type": "text",
+                "create_time": "1720000000000",
+                "content": "   ",
+            },
+            "ou_1",
+        )
+        is None
+    )
 
 
 def test_listen_restarts_subprocess_after_eof(tmp_path):
