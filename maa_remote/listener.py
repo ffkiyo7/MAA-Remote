@@ -19,20 +19,40 @@ def parse_event(
     max_age_s: int = 0,
     now_ms: int | None = None,
 ) -> Msg | None:
-    if obj.get("header", {}).get("event_type") != "im.message.receive_v1":
+    event_type = obj.get("type") or obj.get("header", {}).get("event_type")
+    if event_type != "im.message.receive_v1":
         return None
 
-    event = obj.get("event", {})
-    message = event.get("message", {})
-    if message.get("message_type") != "text":
+    if "event" in obj:
+        event = obj.get("event", {})
+        message = event.get("message", {})
+        sender_open_id = event.get("sender", {}).get("sender_id", {}).get("open_id", "")
+        content_raw = message.get("content", "{}")
+        try:
+            content = json.loads(content_raw)
+        except json.JSONDecodeError:
+            return None
+        text = str(content.get("text", "")).strip()
+        message_id = message.get("message_id", "")
+        chat_id = message.get("chat_id", "")
+        message_type = message.get("message_type")
+        create_time_raw = message.get("create_time", "0")
+    else:
+        sender_open_id = obj.get("sender_id", "")
+        text = str(obj.get("content", "")).strip()
+        message_id = obj.get("message_id") or obj.get("id", "")
+        chat_id = obj.get("chat_id", "")
+        message_type = obj.get("message_type")
+        create_time_raw = obj.get("create_time", "0")
+
+    if message_type != "text":
         return None
 
-    sender_open_id = event.get("sender", {}).get("sender_id", {}).get("open_id", "")
     if sender_open_id != allowed_sender:
         return None
 
     try:
-        create_time = int(message.get("create_time", "0"))
+        create_time = int(create_time_raw)
     except (TypeError, ValueError):
         create_time = 0
 
@@ -41,24 +61,18 @@ def parse_event(
         if current_ms - create_time > max_age_s * 1000:
             log.info(
                 "忽略过旧消息 message_id=%s（超过 %ss）",
-                message.get("message_id"),
+                message_id,
                 max_age_s,
             )
             return None
 
-    try:
-        content = json.loads(message.get("content", "{}"))
-    except json.JSONDecodeError:
-        return None
-
-    text = str(content.get("text", "")).strip()
     if not text:
         return None
 
     return Msg(
         text=text,
-        chat_id=message.get("chat_id", ""),
-        message_id=message.get("message_id", ""),
+        chat_id=chat_id,
+        message_id=message_id,
         sender_open_id=sender_open_id,
         create_time=create_time,
     )

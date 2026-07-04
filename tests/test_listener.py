@@ -35,6 +35,25 @@ def test_parse_event_extracts_text_message():
     assert msg.sender_open_id == "ou_1" and msg.create_time == 1720000000000
 
 
+def test_parse_event_extracts_lark_cli_flattened_event():
+    msg = parse_event(
+        {
+            "type": "im.message.receive_v1",
+            "sender_id": "ou_1",
+            "message_id": "om_9",
+            "chat_id": "oc_9",
+            "message_type": "text",
+            "create_time": "1720000000000",
+            "content": "跑日常",
+        },
+        allowed_sender="ou_1",
+    )
+    assert msg.text == "跑日常"
+    assert msg.chat_id == "oc_9"
+    assert msg.message_id == "om_9"
+    assert msg.sender_open_id == "ou_1"
+
+
 def test_parse_event_filters_other_sender():
     assert parse_event(_event("hi", open_id="ou_other"), allowed_sender="ou_1") is None
 
