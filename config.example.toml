@@ -1,9 +1,10 @@
 # MAA_remote 配置模板 —— 复制为 config.toml 后按本机实测值填写。
 # 换机必改：[maa] 各路径、[emulator] 路径/端口。用 SPEC.md §0 的方法重扫。
 # DeepSeek key 不写这里，设为环境变量 DEEPSEEK_API_KEY。
+# ⚠️ 含空格的可执行文件路径必须用双引号包住（launch_cmd/shutdown_cmd 会被 shlex.split 切分）。
 
 [lark]
-allowed_sender_open_id = ""      # 留空=自动锁定当机 lark-cli 登录者（推荐，换账号零改）
+allowed_sender_open_id = ""      # 留空=自动锁定当机 lark-cli 登录者；解析不到会启动报错，此时在此显式填 open_id
 app_id                 = ""      # 留空=用 lark-cli 当前应用；多应用时填 appId
 identity               = "auto"
 event_key              = "im.message.receive_v1"
@@ -19,12 +20,14 @@ cache_system_prompt = true
 
 [maa]
 maa_cli_path        = "%LOCALAPPDATA%/Programs/maa-cli/maa.exe"   # maa.exe 路径
-core_dir            = "<MAA GUI 目录，含 MaaCore.dll>"
+core_dir            = "<MAA GUI 目录，含 MaaCore.dll>"             # 执行时注入 MAA_CORE_DIR
 resource_dir        = "<MAA GUI 目录>/resource"
+config_dir          = "%APPDATA%/loong/maa/config"                # maa-cli 配置目录；任务文件写到 <config_dir>/tasks
 stage_activity_json = "%LOCALAPPDATA%/loong/maa/cache/StageActivityV2.json"
-client              = "Official"                                 # 区服：Official/Bilibili/YoStarEN/...
+client              = "Official"                                  # 区服：Official/Bilibili/YoStarEN/...
 hot_update_before_catalog = true
-daily_tasks         = ["startup", "recruit", "infrast", "mall", "award"]
+task_timeout_s      = 3600                                        # 单次 maa run 的最长时间（秒）
+daily_tasks         = ["startup", "recruit", "infrast", "mall", "award", "fight"]
 
 [maa.fight]
 stage             = ""
@@ -35,8 +38,8 @@ stone             = 0
 [emulator]
 kind           = "mumu"                       # mumu/leidian/bluestacks
 vmindex        = 0
-launch_cmd     = '<模拟器管理器> control -v 0 launch'
-shutdown_cmd   = '<模拟器管理器> control -v 0 shutdown'
+launch_cmd     = '"<模拟器管理器完整路径>" control -v 0 launch'    # 路径含空格必须带双引号
+shutdown_cmd   = '"<模拟器管理器完整路径>" control -v 0 shutdown'
 adb_path       = '<模拟器目录>/adb.exe'
 adb_serial     = "127.0.0.1:16384"            # MuMu12 实例0 默认；查 vm_config.json 的 port_forward.adb
 boot_timeout_s = 120
@@ -44,5 +47,7 @@ close_after    = false
 
 [runtime]
 busy_reply      = "正在跑中，稍等 🐢"
-ack_reply       = "🟡 收到，开始跑日常…"
-selection_ttl_s = 300
+ack_reply       = "🟡 收到，开始跑…"
+selection_ttl_s = 300              # 待选关卡 / 待确认状态过期时间（秒）
+max_msg_age_s   = 300              # 忽略距今超过此秒数的旧消息（防积压事件轰炸）
+log_file        = "logs/maa_remote.log"

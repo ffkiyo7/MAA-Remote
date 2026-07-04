@@ -14,7 +14,7 @@
     },
     "startup": {
       "type": "boolean",
-      "description": "开局：唤醒并进入主界面（含收邮件）。跑日常默认 true"
+      "description": "开局：唤醒并进入主界面（含收邮件）。恒为 true——模拟器可能是冷启动、游戏未开；StartUp 幂等，已在游戏内时秒过"
     },
     "recruit": {
       "type": "object",
@@ -72,12 +72,14 @@
         "medicine": {
           "type": "integer",
           "minimum": 0,
-          "description": "动用囤积理智药的数量。默认 0（不动囤药）。仅用户明确要求时才 >0"
+          "maximum": 999,
+          "description": "动用囤积理智药的数量。默认 0（不动囤药）。仅用户明确要求时才 >0；>0 时 Router 会先向用户二次确认再执行"
         },
         "stone": {
           "type": "integer",
           "minimum": 0,
-          "description": "碎石数量。默认 0（绝不碎石）。仅用户明确要求碎石时才 >0"
+          "maximum": 999,
+          "description": "碎石数量。默认 0（绝不碎石）。仅用户明确要求碎石时才 >0；>0 时 Router 会先向用户二次确认再执行"
         }
       },
       "required": ["enable"]

@@ -8,8 +8,10 @@
 {"input":"刷这期活动的代币","expected":{"action":"ask_stage_selection"}}
 {"input":"帮我刷点当期新出的关卡","expected":{"action":"ask_stage_selection"}}
 {"input":"活动关卡 UR-8 打五次","expected":{"action":"run","fight":{"enable":true,"stage":"UR-8","times":5,"stone":0,"medicine":0}}}
-{"input":"把囤的理智药也用掉，一直刷 1-7","expected":{"action":"run","fight":{"enable":true,"stage":"1-7","expiring_medicine":true,"medicine":999,"stone":0}}}
-{"input":"碎 50 颗源石刷 UR-8","expected":{"action":"run","fight":{"enable":true,"stage":"UR-8","stone":50,"medicine":0}}}
+{"input":"把囤的理智药也用掉，一直刷 1-7","expected":{"action":"run","startup":true,"fight":{"enable":true,"stage":"1-7","expiring_medicine":true,"medicine":999,"stone":0}}}
+{"input":"碎 50 颗源石刷 UR-8","expected":{"action":"run","startup":true,"fight":{"enable":true,"stage":"UR-8","stone":50,"medicine":0}}}
+{"input":"打 5 次龙门币本","expected":{"action":"run","startup":true,"fight":{"enable":true,"stage":"CE-6","times":5,"stone":0,"medicine":0}}}
+{"input":"随便刷刷当前关","expected":{"action":"run","startup":true,"fight":{"enable":true,"stage":"","stone":0,"medicine":0}}}
 {"input":"只做公招和信用","expected":{"action":"run","recruit":{"enable":true},"mall":{"enable":true},"infrast":{"enable":false},"award":{"enable":false},"fight":{"enable":false}}}
 {"input":"公招只做两次就行","expected":{"action":"run","recruit":{"enable":true,"max_times":2}}}
 {"input":"今天天气怎么样","expected":{"action":"reject"}}
