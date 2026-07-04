@@ -1,0 +1,29 @@
+{
+  "Official": {
+    "sideStoryStage": {
+      "OPEN": {
+        "Activity": {
+          "Tip": "SideStory「测试当期」",
+          "StageName": "测试当期",
+          "UtcStartTime": "2026/06/28 16:00:00",
+          "UtcExpireTime": "2026/07/12 03:59:59",
+          "TimeZone": 8
+        },
+        "Stages": [
+          { "Display": "TT-8", "Value": "TT-8", "Drop": "本关效率最高" },
+          { "Display": "TT-7", "Value": "TT-7", "Drop": "突破材料" }
+        ]
+      },
+      "GONE": {
+        "Activity": {
+          "Tip": "SideStory「已结束」",
+          "StageName": "已结束",
+          "UtcStartTime": "2026/05/01 16:00:00",
+          "UtcExpireTime": "2026/05/15 03:59:59",
+          "TimeZone": 8
+        },
+        "Stages": [{ "Display": "GG-8", "Value": "GG-8", "Drop": "x" }]
+      }
+    }
+  }
+}
