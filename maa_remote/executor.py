@@ -150,6 +150,9 @@ def run_maa(plan: TaskPlan, cfg: Config, task_dir: str, runner=run_utf8) -> Exec
         env["MAA_CORE_DIR"] = cfg.maa.core_dir
     if cfg.maa.resource_dir:
         env["MAA_RESOURCE_DIR"] = cfg.maa.resource_dir
+    adb_dir = os.path.dirname(cfg.emulator.adb_path)
+    if adb_dir:
+        env["PATH"] = adb_dir + os.pathsep + env.get("PATH", "")
 
     try:
         result = runner(cmd, env=env, timeout=cfg.maa.task_timeout_s)

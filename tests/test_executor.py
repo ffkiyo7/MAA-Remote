@@ -206,6 +206,7 @@ def test_run_maa_writes_task_and_injects_env(tmp_path):
     assert captured["env"]["MAA_CORE_DIR"] == "D:/MAA-GUI"
     assert captured["env"]["MAA_RESOURCE_DIR"] == "D:/MAA-GUI/resource"
     assert captured["env"]["MAA_CONFIG_DIR"] == os.path.dirname(task_dir)
+    assert captured["env"]["PATH"].split(os.pathsep)[0] == "C:/Program Files/Mu Mu"
     assert captured["timeout"] == 3600
     assert any(name.endswith(".json") for name in os.listdir(task_dir))
     written = json.load(open(os.path.join(task_dir, os.listdir(task_dir)[0]), encoding="utf-8"))
