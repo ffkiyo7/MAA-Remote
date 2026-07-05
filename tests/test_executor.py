@@ -375,3 +375,19 @@ def test_asst_log_tailer_reads_only_new_lines(tmp_path):
             _t.sleep(0.02)
     assert len(events) == 1
     assert events[0].phase == "start" and "公招" in events[0].text
+
+
+def test_asst_log_tailer_resets_offset_when_log_rotates(tmp_path):
+    import time as _t
+    from maa_remote.executor import AsstLogTailer
+
+    log_path = tmp_path / "asst.log"
+    log_path.write_text("old line\n" * 100, encoding="utf-8")
+    events = []
+    with AsstLogTailer(str(log_path), events.append, poll_interval_s=0.01):
+        log_path.write_text(ASST.format(kind="Start", chain="Recruit") + "\n", encoding="utf-8")
+        deadline = _t.monotonic() + 2
+        while not events and _t.monotonic() < deadline:
+            _t.sleep(0.02)
+    assert len(events) == 1
+    assert events[0].phase == "start" and "公招" in events[0].text

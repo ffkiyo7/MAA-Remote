@@ -187,6 +187,13 @@ class AsstLogTailer:
 
     def _drain(self) -> None:
         try:
+            size = os.path.getsize(self.log_path)
+        except OSError:
+            return
+        if size < self._offset:
+            self._offset = 0
+
+        try:
             with open(self.log_path, "r", encoding="utf-8", errors="replace") as f:
                 f.seek(self._offset)
                 for line in f:
