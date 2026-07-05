@@ -1,3 +1,5 @@
+import json
+
 from maa_remote.models import ExecResult, Msg
 from maa_remote.reporter import build_summary, report, send_reply
 
@@ -53,9 +55,21 @@ def test_send_reply_invokes_lark_cli():
     cmd = calls[0][0]
     assert "lark-cli" in cmd[0] and "+messages-reply" in cmd
     assert "--message-id" in cmd and "om_1" in cmd
-    assert "--text" in cmd and "hello" in cmd
+    assert "--content" in cmd
+    content = json.loads(cmd[cmd.index("--content") + 1])
+    assert content == {"text": "hello"}
+    assert "--msg-type" in cmd and "text" in cmd
     assert "--as" in cmd and "bot" in cmd
     assert calls[0][1]["timeout"] == 30
+
+
+def test_send_reply_escapes_multiline_text_for_windows_cmd_shim():
+    calls = []
+    send_reply("om_1", "第一行\n第二行", "bot", runner=_runner_with_stdout("{}", calls))
+    cmd = calls[0]
+    assert all("\n" not in arg for arg in cmd)
+    content = json.loads(cmd[cmd.index("--content") + 1])
+    assert content == {"text": "第一行\n第二行"}
 
 
 def _runner_with_stdout(stdout, calls):

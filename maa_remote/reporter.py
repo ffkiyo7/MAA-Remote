@@ -65,14 +65,18 @@ def send_reply(
     runner=run_utf8,
     reply_in_thread: bool = False,
 ) -> str | None:
+    log.info("发送飞书回复: message_id=%s identity=%s thread=%s", message_id, identity, reply_in_thread)
+    content = json.dumps({"text": text}, ensure_ascii=False)
     cmd = [
         resolve_executable("lark-cli"),
         "im",
         "+messages-reply",
         "--message-id",
         message_id,
-        "--text",
-        text,
+        "--content",
+        content,
+        "--msg-type",
+        "text",
         "--as",
         identity,
         "--json",

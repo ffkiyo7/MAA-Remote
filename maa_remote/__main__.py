@@ -49,6 +49,7 @@ def handle_message(
     thread_factory=threading.Thread,
 ) -> None:
     route_result = router.route(msg)
+    log.info("消息路由: text=%r kind=%s identity=%s", msg.text, route_result.kind, identity)
     if route_result.kind == "reply":
         send_reply(msg.message_id, route_result.reply, identity, runner=runner)
         return
