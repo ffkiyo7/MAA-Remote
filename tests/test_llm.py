@@ -69,3 +69,62 @@ def test_chat_preserves_llm_error():
     )
     with pytest.raises(LLMError, match="provider rejected request"):
         client.chat("SYS", "USER")
+
+
+def test_chat_sends_thinking_and_effort_at_top_level_by_default():
+    cap = {}
+    client = LLMClient(
+        "https://api.deepseek.com", "sk-1", "deepseek-v4-flash", 120, post=make_post(cap)
+    )
+    client.chat("SYS", "USER", json_mode=True)
+    assert cap["payload"]["thinking"] == {"type": "enabled"}
+    assert cap["payload"]["reasoning_effort"] == "high"
+    assert "extra_body" not in cap["payload"]
+    assert cap["payload"]["response_format"] == {"type": "json_object"}
+
+
+def test_chat_thinking_disabled_omits_reasoning_effort():
+    cap = {}
+    client = LLMClient(
+        "https://api.deepseek.com",
+        "sk-1",
+        "deepseek-v4-flash",
+        120,
+        post=make_post(cap),
+        thinking="disabled",
+    )
+    client.chat("SYS", "USER")
+    assert cap["payload"]["thinking"] == {"type": "disabled"}
+    assert "reasoning_effort" not in cap["payload"]
+
+
+def test_chat_effort_max_passthrough():
+    cap = {}
+    client = LLMClient(
+        "https://api.deepseek.com",
+        "sk-1",
+        "deepseek-v4-flash",
+        120,
+        post=make_post(cap),
+        reasoning_effort="max",
+    )
+    client.chat("SYS", "USER")
+    assert cap["payload"]["reasoning_effort"] == "max"
+
+
+def test_chat_ignores_reasoning_content_field():
+    def post_with_reasoning(url, headers, payload, timeout):
+        return {
+            "choices": [
+                {"message": {"content": '{"action":"run"}', "reasoning_content": "思考过程..."}}
+            ]
+        }
+
+    client = LLMClient(
+        "https://api.deepseek.com",
+        "sk-1",
+        "deepseek-v4-flash",
+        120,
+        post=post_with_reasoning,
+    )
+    assert client.chat("SYS", "USER") == '{"action":"run"}'

@@ -26,11 +26,15 @@ class LLMClient:
         model: str,
         timeout_s: int,
         post: Callable[..., dict[str, Any]] | None = None,
+        thinking: str = "enabled",
+        reasoning_effort: str = "high",
     ):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.model = model
         self.timeout_s = timeout_s
+        self.thinking = thinking
+        self.reasoning_effort = reasoning_effort
         self._post = post or _httpx_post
 
     def chat(self, system: str, user: str, json_mode: bool = False) -> str:
@@ -41,6 +45,9 @@ class LLMClient:
                 {"role": "user", "content": user},
             ],
         }
+        payload["thinking"] = {"type": self.thinking}
+        if self.thinking == "enabled":
+            payload["reasoning_effort"] = self.reasoning_effort
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
 
