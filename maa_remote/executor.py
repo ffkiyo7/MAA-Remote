@@ -1,15 +1,21 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import shlex
+import subprocess
+import threading
 import time
 import uuid
 
 from maa_remote.config import Config
 from maa_remote.models import ExecResult, TaskPlan
 from maa_remote.procutil import run_utf8
+from maa_remote.progress import ProgressEvent, parse_progress_line
+
+log = logging.getLogger("maa_remote.executor")
 
 
 class EmulatorError(Exception):
@@ -95,8 +101,14 @@ def ensure_emulator(
     runner=run_utf8,
     sleep=time.sleep,
     monotonic=time.monotonic,
+    on_event=None,
 ) -> None:
     emulator = cfg.emulator
+    if on_event is not None:
+        try:
+            on_event(ProgressEvent("start", "🖥️ 拉起模拟器中…"))
+        except Exception:
+            log.exception("进度回调失败(忽略)")
     runner(shlex.split(emulator.launch_cmd), timeout=60)
     deadline = monotonic() + emulator.boot_timeout_s
 
@@ -107,6 +119,11 @@ def ensure_emulator(
             timeout=15,
         )
         if (getattr(state, "stdout", "") or "").strip() == "device":
+            if on_event is not None:
+                try:
+                    on_event(ProgressEvent("done", "✅ 模拟器就绪"))
+                except Exception:
+                    log.exception("进度回调失败(忽略)")
             return
         sleep(2)
 
@@ -137,7 +154,60 @@ def parse_maa_log(text: str) -> dict:
     return facts
 
 
-def run_maa(plan: TaskPlan, cfg: Config, task_dir: str, runner=run_utf8) -> ExecResult:
+class AsstLogTailer:
+    """maa 运行期间 tail MaaCore asst.log，把新增行解析成进度事件。"""
+
+    def __init__(self, log_path: str, on_event, poll_interval_s: float = 1.0):
+        self.log_path = log_path
+        self.on_event = on_event
+        self.poll_interval_s = poll_interval_s
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._offset = 0
+
+    def __enter__(self) -> "AsstLogTailer":
+        try:
+            self._offset = os.path.getsize(self.log_path)
+        except OSError:
+            self._offset = 0
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+        return self
+
+    def __exit__(self, *exc) -> None:
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join(timeout=5)
+
+    def _run(self) -> None:
+        while not self._stop.is_set():
+            self._drain()
+            self._stop.wait(self.poll_interval_s)
+        self._drain()
+
+    def _drain(self) -> None:
+        try:
+            with open(self.log_path, "r", encoding="utf-8", errors="replace") as f:
+                f.seek(self._offset)
+                for line in f:
+                    event = parse_progress_line(line)
+                    if event is not None:
+                        try:
+                            self.on_event(event)
+                        except Exception:
+                            log.exception("进度回调失败(忽略)")
+                self._offset = f.tell()
+        except OSError:
+            pass
+
+
+def run_maa(
+    plan: TaskPlan,
+    cfg: Config,
+    task_dir: str,
+    popen=subprocess.Popen,
+    on_event=None,
+) -> ExecResult:
     os.makedirs(task_dir, exist_ok=True)
     name = f"maa_remote_{uuid.uuid4().hex[:8]}"
     task_path = os.path.join(task_dir, f"{name}.json")
@@ -156,13 +226,75 @@ def run_maa(plan: TaskPlan, cfg: Config, task_dir: str, runner=run_utf8) -> Exec
         env["PATH"] = adb_dir + os.pathsep + env.get("PATH", "")
 
     try:
-        result = runner(cmd, env=env, timeout=cfg.maa.task_timeout_s)
+        proc = popen(
+            cmd,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            bufsize=1,
+        )
     except Exception as exc:
         return ExecResult(ok=False, exit_code=-1, raw_log="", facts={}, error=f"maa 启动失败: {exc}")
 
-    raw_log = (getattr(result, "stdout", "") or "") + (getattr(result, "stderr", "") or "")
+    timed_out = threading.Event()
+
+    def _kill() -> None:
+        timed_out.set()
+        try:
+            proc.kill()
+        except Exception:
+            pass
+
+    watchdog = threading.Timer(cfg.maa.task_timeout_s, _kill)
+    watchdog.daemon = True
+    watchdog.start()
+
+    use_tailer = bool(cfg.maa.asst_log_path) and on_event is not None
+    lines: list[str] = []
+    delivered = {"n": 0}
+
+    def _emit(event: ProgressEvent) -> None:
+        delivered["n"] += 1
+        try:
+            on_event(event)
+        except Exception:
+            log.exception("进度回调失败(忽略)")
+
+    def _pump() -> None:
+        for line in proc.stdout or []:
+            lines.append(line.rstrip("\n"))
+            if on_event is not None and not use_tailer:
+                event = parse_progress_line(line)
+                if event is not None:
+                    _emit(event)
+
+    try:
+        if use_tailer:
+            with AsstLogTailer(cfg.maa.asst_log_path, _emit):
+                _pump()
+                returncode = proc.wait()
+        else:
+            _pump()
+            returncode = proc.wait()
+    finally:
+        watchdog.cancel()
+
+    if on_event is not None and delivered["n"] == 0 and not timed_out.is_set():
+        _emit(ProgressEvent("info", "ℹ️ 本次没拿到细粒度进度，请等最终总结"))
+
+    raw_log = "\n".join(lines)
     facts = parse_maa_log(raw_log)
-    returncode = getattr(result, "returncode", 0)
+    if timed_out.is_set():
+        return ExecResult(
+            ok=False,
+            exit_code=-1,
+            raw_log=raw_log,
+            facts=facts,
+            error=f"MAA 超时(超过 {cfg.maa.task_timeout_s}s)，已强制终止",
+        )
     if returncode != 0:
         return ExecResult(
             ok=False,
@@ -181,13 +313,21 @@ def execute(
     runner=run_utf8,
     sleep=time.sleep,
     monotonic=time.monotonic,
+    on_event=None,
+    popen=subprocess.Popen,
 ) -> ExecResult:
     try:
-        ensure_emulator(cfg, runner=runner, sleep=sleep, monotonic=monotonic)
+        ensure_emulator(
+            cfg,
+            runner=runner,
+            sleep=sleep,
+            monotonic=monotonic,
+            on_event=on_event,
+        )
     except EmulatorError as exc:
         return ExecResult(ok=False, exit_code=-1, raw_log="", facts={}, error=str(exc))
 
-    result = run_maa(plan, cfg, task_dir, runner=runner)
+    result = run_maa(plan, cfg, task_dir, popen=popen, on_event=on_event)
     if cfg.emulator.close_after:
         runner(shlex.split(cfg.emulator.shutdown_cmd), timeout=60)
     return result

@@ -4,6 +4,7 @@ import textwrap
 
 import pytest
 
+from conftest import FakePopen
 from maa_remote.config import load_config
 from maa_remote.executor import (
     EmulatorError,
@@ -189,48 +190,93 @@ def test_parse_maa_log_extracts_summary_section():
 
 def test_run_maa_writes_task_and_injects_env(tmp_path):
     cfg = _cfg(tmp_path)
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
     task_dir = str(tmp_path / "tasks")
-    plan = TaskPlan(action="run", fight=Fight(enable=True, stage="TT-8"))
-    captured = {}
-
-    def runner(cmd, **kw):
-        captured["cmd"] = cmd
-        captured["env"] = kw.get("env")
-        captured["timeout"] = kw.get("timeout")
-        return R("Summary\nFight TT-8 1 times\n")
-
-    res = run_maa(plan, cfg, task_dir, runner=runner)
-    assert res.ok is True and res.exit_code == 0
-    assert captured["cmd"][0] == cfg.maa.maa_cli_path
-    assert "run" in captured["cmd"] and "--batch" in captured["cmd"]
-    assert "--no-summary" not in captured["cmd"]
-    assert "-a" in captured["cmd"] and cfg.emulator.adb_serial in captured["cmd"]
-    assert captured["env"]["MAA_CORE_DIR"] == "D:/MAA-GUI"
-    assert captured["env"]["MAA_RESOURCE_DIR"] == "D:/MAA-GUI/resource"
-    assert captured["env"]["MAA_CONFIG_DIR"] == os.path.dirname(task_dir)
-    assert captured["env"]["PATH"].split(os.pathsep)[0] == "C:/Program Files/Mu Mu"
-    assert captured["timeout"] == 3600
+    popen = FakePopen(["Summary", "all done"])
+    res = run_maa(plan, cfg, task_dir, popen=popen)
+    assert res.ok is True
+    assert popen.cmd[0] == cfg.maa.maa_cli_path and "--batch" in popen.cmd
+    env = popen.kw["env"]
+    assert env["MAA_CONFIG_DIR"] == os.path.dirname(task_dir)
+    assert env["MAA_CORE_DIR"] == cfg.maa.core_dir
+    assert env["MAA_RESOURCE_DIR"] == cfg.maa.resource_dir
+    assert env["PATH"].split(os.pathsep)[0] == "C:/Program Files/Mu Mu"
+    assert popen.kw["encoding"] == "utf-8" and popen.kw["errors"] == "replace"
+    assert "Summary" in res.raw_log
     assert any(name.endswith(".json") for name in os.listdir(task_dir))
     written = json.load(open(os.path.join(task_dir, os.listdir(task_dir)[0]), encoding="utf-8"))
-    assert written["tasks"][-1]["type"] == "Fight"
+    assert written["tasks"][0]["type"] == "StartUp"
 
 
 def test_run_maa_nonzero_is_failure(tmp_path):
     cfg = _cfg(tmp_path)
-    plan = TaskPlan(action="run", fight=Fight(enable=True))
-    res = run_maa(plan, cfg, str(tmp_path / "tasks"), runner=lambda cmd, **kw: R("boom", code=2))
-    assert res.ok is False and res.exit_code == 2 and res.error
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+    res = run_maa(plan, cfg, str(tmp_path / "tasks"), popen=FakePopen(["boom"], returncode=2))
+    assert res.ok is False and "退出码 2" in res.error
 
 
-def test_run_maa_runner_exception_is_failure(tmp_path):
+def test_run_maa_popen_exception_is_failure(tmp_path):
     cfg = _cfg(tmp_path)
-    plan = TaskPlan(action="run", fight=Fight(enable=True))
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+    res = run_maa(plan, cfg, str(tmp_path / "tasks"), popen=FakePopen([], boom=OSError("no exe")))
+    assert res.ok is False and "maa 启动失败" in res.error
 
-    def boom(cmd, **kw):
-        raise TimeoutError("too slow")
 
-    res = run_maa(plan, cfg, str(tmp_path / "tasks"), runner=boom)
-    assert res.ok is False and "too slow" in res.error
+ASST = 'Assistant::append_callback | TaskChain{kind} {{"taskchain":"{chain}","taskid":1,"uuid":"X"}}'
+
+
+def test_run_maa_emits_progress_events_in_order(tmp_path):
+    cfg = _cfg(tmp_path)
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+    lines = [
+        ASST.format(kind="Start", chain="StartUp"),
+        "noise",
+        ASST.format(kind="Completed", chain="StartUp"),
+        ASST.format(kind="Start", chain="Recruit"),
+        ASST.format(kind="Completed", chain="Recruit"),
+    ]
+    events = []
+    res = run_maa(plan, cfg, str(tmp_path / "tasks"), popen=FakePopen(lines), on_event=events.append)
+    assert res.ok is True
+    assert [e.phase for e in events] == ["start", "done", "start", "done"]
+    assert "公招" in events[2].text
+
+
+def test_run_maa_on_event_exception_does_not_fail_run(tmp_path):
+    cfg = _cfg(tmp_path)
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+    lines = [ASST.format(kind="Start", chain="Recruit")]
+
+    def bad_cb(event):
+        raise RuntimeError("callback broke")
+
+    res = run_maa(plan, cfg, str(tmp_path / "tasks"), popen=FakePopen(lines), on_event=bad_cb)
+    assert res.ok is True
+
+
+def test_run_maa_timeout_kills_and_reports(tmp_path):
+    import time as _t
+
+    cfg = _cfg(tmp_path)
+    cfg.maa.task_timeout_s = 0.05
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+
+    class SlowPopen(FakePopen):
+        @property
+        def stdout(self):
+            def gen():
+                for line in self._lines:
+                    if self.killed:
+                        return
+                    _t.sleep(0.03)
+                    yield line + "\n"
+
+            return gen()
+
+    popen = SlowPopen(["line"] * 50)
+    res = run_maa(plan, cfg, str(tmp_path / "tasks"), popen=popen)
+    assert res.ok is False and "超时" in res.error
+    assert popen.killed is True
 
 
 def test_execute_emulator_failure_short_circuits(tmp_path):
@@ -249,6 +295,7 @@ def test_execute_emulator_failure_short_circuits(tmp_path):
         runner=lambda cmd, **kw: R("offline\n"),
         sleep=lambda s: None,
         monotonic=mono,
+        popen=FakePopen([""]),
     )
     assert res.ok is False and "未就绪" in res.error
 
@@ -263,10 +310,68 @@ def test_execute_closes_emulator_when_configured(tmp_path):
         calls.append(cmd)
         if cmd[-1] == "get-state":
             return R("device\n")
-        if len(cmd) > 1 and cmd[1] == "run":
-            return R("Summary\nFight TT-8 1 times\n")
         return R()
 
-    res = execute(plan, cfg, str(tmp_path / "tasks"), runner=runner, sleep=lambda s: None, monotonic=lambda: 0.0)
+    res = execute(
+        plan,
+        cfg,
+        str(tmp_path / "tasks"),
+        runner=runner,
+        sleep=lambda s: None,
+        monotonic=lambda: 0.0,
+        popen=FakePopen(["Summary", "Fight TT-8 1 times"]),
+    )
     assert res.ok is True
     assert calls[-1] == ["C:/Program Files/Mu Mu/MuMuManager.exe", "control", "-v", "0", "shutdown"]
+
+
+def test_ensure_emulator_emits_progress_events(tmp_path):
+    cfg = _cfg(tmp_path)
+    events = []
+
+    def runner(cmd, **kw):
+        return R("device\n")
+
+    ensure_emulator(cfg, runner=runner, sleep=lambda s: None, monotonic=lambda: 0.0, on_event=events.append)
+    assert [e.phase for e in events] == ["start", "done"]
+    assert "模拟器" in events[0].text and "模拟器" in events[1].text
+
+
+def test_run_maa_no_signals_emits_fallback_notice(tmp_path):
+    cfg = _cfg(tmp_path)
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+    events = []
+    res = run_maa(plan, cfg, str(tmp_path / "tasks"), popen=FakePopen(["no signal here"]), on_event=events.append)
+    assert res.ok is True
+    assert [e.phase for e in events] == ["info"]
+    assert "细粒度进度" in events[0].text
+
+
+def test_run_maa_with_asst_log_path_uses_tailer_not_stdout(tmp_path):
+    cfg = _cfg(tmp_path)
+    log_path = tmp_path / "asst.log"
+    log_path.write_text("", encoding="utf-8")
+    cfg.maa.asst_log_path = str(log_path)
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+    lines = [ASST.format(kind="Start", chain="Recruit")]
+    events = []
+    res = run_maa(plan, cfg, str(tmp_path / "tasks"), popen=FakePopen(lines), on_event=events.append)
+    assert res.ok is True
+    assert [e.phase for e in events] == ["info"]
+
+
+def test_asst_log_tailer_reads_only_new_lines(tmp_path):
+    import time as _t
+    from maa_remote.executor import AsstLogTailer
+
+    log_path = tmp_path / "asst.log"
+    log_path.write_text(ASST.format(kind="Start", chain="StartUp") + "\n", encoding="utf-8")
+    events = []
+    with AsstLogTailer(str(log_path), events.append, poll_interval_s=0.01):
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(ASST.format(kind="Start", chain="Recruit") + "\n")
+        deadline = _t.monotonic() + 2
+        while not events and _t.monotonic() < deadline:
+            _t.sleep(0.02)
+    assert len(events) == 1
+    assert events[0].phase == "start" and "公招" in events[0].text
