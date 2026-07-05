@@ -1,0 +1,11 @@
+[2026-07-05 15:02:18.865][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainStart {"taskchain":"StartUp","taskid":1,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:03:39.370][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainCompleted {"taskchain":"StartUp","taskid":1,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:03:39.871][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainStart {"taskchain":"Recruit","taskid":2,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:04:30.020][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainCompleted {"taskchain":"Recruit","taskid":2,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:04:30.521][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainStart {"taskchain":"Infrast","taskid":3,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:07:38.481][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainCompleted {"taskchain":"Infrast","taskid":3,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:07:38.989][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainStart {"taskchain":"Mall","taskid":4,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:10:45.259][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainCompleted {"taskchain":"Mall","taskid":4,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:10:45.760][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainStart {"taskchain":"Award","taskid":5,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:11:04.125][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainCompleted {"taskchain":"Award","taskid":5,"uuid":"222203e1afbe086d"}
+[2026-07-05 15:11:04.625][INF][Px1044][Tx49609] Assistant::append_callback | TaskChainStart {"taskchain":"Fight","taskid":6,"uuid":"222203e1afbe086d"}
