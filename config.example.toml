@@ -11,12 +11,14 @@ event_key              = "im.message.receive_v1"
 
 [llm]
 provider            = "deepseek"
-model               = "deepseek-chat"
+model               = "deepseek-v4-flash"  # deepseek-chat/reasoner 2026-07-24 官方下线，勿再使用
 base_url            = "https://api.deepseek.com"
 api_key_env         = "DEEPSEEK_API_KEY"
-request_timeout_s   = 30
+request_timeout_s   = 120                  # thinking 模式更慢，30s 不够
 max_retries         = 1
 cache_system_prompt = true
+thinking            = "enabled"            # enabled | disabled(JSON 输出异常时的降级开关)
+reasoning_effort    = "high"               # high | max(仅 thinking=enabled 时生效)
 
 [maa]
 maa_cli_path        = "%LOCALAPPDATA%/Programs/maa-cli/maa.exe"   # maa.exe 路径

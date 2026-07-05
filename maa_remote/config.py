@@ -32,6 +32,8 @@ class LLMConfig:
     request_timeout_s: int
     max_retries: int
     cache_system_prompt: bool
+    thinking: str
+    reasoning_effort: str
 
 
 @dataclass
@@ -130,6 +132,8 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
             request_timeout_s=llm["request_timeout_s"],
             max_retries=llm["max_retries"],
             cache_system_prompt=llm["cache_system_prompt"],
+            thinking=llm.get("thinking", "enabled"),
+            reasoning_effort=llm.get("reasoning_effort", "high"),
         ),
         maa=MaaConfig(
             maa_cli_path=_expand(maa["maa_cli_path"], env),

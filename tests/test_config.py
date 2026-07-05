@@ -150,3 +150,33 @@ def test_progress_and_confirm_sections_override(tmp_path):
     assert cfg.progress.style == "flat"
     assert cfg.confirm.mode == "spend_only"
     assert cfg.confirm.ttl_s == 120
+
+
+def _example_llm_without(tmp_path, *keys):
+    body = open("config.example.toml", encoding="utf-8").read()
+    lines = [
+        line
+        for line in body.splitlines()
+        if not any(line.strip().startswith(k) for k in keys)
+    ]
+    p = tmp_path / "config.toml"
+    p.write_text("\n".join(lines), encoding="utf-8")
+    return str(p)
+
+
+def test_llm_thinking_defaults_when_keys_missing(tmp_path):
+    path = _example_llm_without(tmp_path, "thinking", "reasoning_effort")
+    cfg = load_config(path, env={"DEEPSEEK_API_KEY": "k", "LOCALAPPDATA": "x", "APPDATA": "y"})
+    assert cfg.llm.thinking == "enabled"
+    assert cfg.llm.reasoning_effort == "high"
+
+
+def test_llm_thinking_keys_override(tmp_path):
+    path = _example_llm_without(tmp_path, "thinking", "reasoning_effort")
+    body = open(path, encoding="utf-8").read().replace(
+        "[llm]", '[llm]\nthinking = "disabled"\nreasoning_effort = "max"', 1
+    )
+    open(path, "w", encoding="utf-8").write(body)
+    cfg = load_config(path, env={"DEEPSEEK_API_KEY": "k", "LOCALAPPDATA": "x", "APPDATA": "y"})
+    assert cfg.llm.thinking == "disabled"
+    assert cfg.llm.reasoning_effort == "max"
