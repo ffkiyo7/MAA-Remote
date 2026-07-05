@@ -11,6 +11,7 @@ from maa_remote.executor import execute as execute_task
 from maa_remote.listener import listen
 from maa_remote.llm import LLMClient
 from maa_remote.procutil import resolve_executable, run_utf8
+from maa_remote.progress import ProgressSender
 from maa_remote.reporter import report, send_reply
 from maa_remote.router import Router
 from maa_remote.stage_catalog import hot_update
@@ -56,12 +57,31 @@ def handle_message(
         send_reply(msg.message_id, cfg.runtime.busy_reply, identity, runner=runner)
         return
 
+    anchor_id = None
     if route_result.reply:
-        send_reply(msg.message_id, route_result.reply, identity, runner=runner)
+        anchor_id = send_reply(msg.message_id, route_result.reply, identity, runner=runner)
+
+    sender = None
+    if cfg.progress.enable:
+        sender = ProgressSender(
+            anchor_id,
+            msg.message_id,
+            identity,
+            cfg.progress.style,
+            runner=runner,
+        )
 
     def _job() -> None:
         try:
-            result = execute_fn(route_result.plan, cfg, task_dir, runner=runner)
+            result = execute_fn(
+                route_result.plan,
+                cfg,
+                task_dir,
+                runner=runner,
+                on_event=sender.handle if sender is not None else None,
+            )
+            if sender is not None:
+                sender.flush()
             report(result, msg, llm, identity, runner=runner)
         except Exception as exc:
             log.exception("worker 执行未捕获异常")

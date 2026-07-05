@@ -48,7 +48,7 @@ close_after    = false
 
 [runtime]
 busy_reply      = "正在跑中，稍等 🐢"
-ack_reply       = "🟡 收到，开始跑…"
+ack_reply       = "🚀 已开始，过程进度看本条消息的话题"  # style=flat 时建议改成"🚀 已开始，进度会陆续发出"
 selection_ttl_s = 300              # 待选关卡 / 待确认状态过期时间（秒）
 max_msg_age_s   = 300              # 忽略距今超过此秒数的旧消息（防积压事件轰炸）
 log_file        = "logs/maa_remote.log"

@@ -137,6 +137,57 @@ def test_execute_path_acks_then_runs_then_reports_and_releases_lock(tmp_path):
     lock.release()
 
 
+def test_execute_path_passes_progress_callback(tmp_path):
+    cfg = _cfg(tmp_path)
+    seen = {}
+    plan = TaskPlan(action="run", fight=Fight(enable=True))
+    router = FakeRouter(RouteResult(kind="execute", reply=cfg.runtime.ack_reply, plan=plan))
+
+    def fake_exec(plan, cfg2, task_dir, **kw):
+        seen["on_event"] = kw.get("on_event")
+        return ExecResult(ok=True, exit_code=0, raw_log="", facts={}, error=None)
+
+    handle_message(
+        _msg(),
+        router,
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=_runner_recording([]),
+        execute_fn=fake_exec,
+        thread_factory=ImmediateThread,
+    )
+    assert callable(seen["on_event"])
+
+
+def test_progress_disabled_passes_none_callback(tmp_path):
+    cfg = _cfg(tmp_path)
+    cfg.progress.enable = False
+    seen = {}
+    plan = TaskPlan(action="run", fight=Fight(enable=True))
+    router = FakeRouter(RouteResult(kind="execute", reply=cfg.runtime.ack_reply, plan=plan))
+
+    def fake_exec(plan, cfg2, task_dir, **kw):
+        seen["on_event"] = kw.get("on_event")
+        return ExecResult(ok=True, exit_code=0, raw_log="", facts={}, error=None)
+
+    handle_message(
+        _msg(),
+        router,
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=_runner_recording([]),
+        execute_fn=fake_exec,
+        thread_factory=ImmediateThread,
+    )
+    assert seen["on_event"] is None
+
+
 def test_busy_when_lock_held(tmp_path):
     cfg = _cfg(tmp_path)
     sent, executed = [], []
