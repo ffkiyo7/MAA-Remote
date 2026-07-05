@@ -48,6 +48,7 @@ class MaaConfig:
     core_dir: str
     resource_dir: str
     config_dir: str
+    asst_log_path: str
     stage_activity_json: str
     client: str
     hot_update_before_catalog: bool
@@ -78,12 +79,26 @@ class RuntimeConfig:
 
 
 @dataclass
+class ProgressConfig:
+    enable: bool
+    style: str
+
+
+@dataclass
+class ConfirmConfig:
+    mode: str
+    ttl_s: int
+
+
+@dataclass
 class Config:
     lark: LarkConfig
     llm: LLMConfig
     maa: MaaConfig
     emulator: EmulatorConfig
     runtime: RuntimeConfig
+    progress: ProgressConfig
+    confirm: ConfirmConfig
 
 
 def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
@@ -97,6 +112,8 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
     fight = maa["fight"]
     emulator = data["emulator"]
     runtime = data["runtime"]
+    progress = data.get("progress", {})
+    confirm = data.get("confirm", {})
 
     return Config(
         lark=LarkConfig(
@@ -119,6 +136,7 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
             core_dir=_expand(maa["core_dir"], env),
             resource_dir=_expand(maa["resource_dir"], env),
             config_dir=_expand(maa["config_dir"], env),
+            asst_log_path=_expand(maa.get("asst_log_path", ""), env),
             stage_activity_json=_expand(maa["stage_activity_json"], env),
             client=maa["client"],
             hot_update_before_catalog=maa["hot_update_before_catalog"],
@@ -147,6 +165,14 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
             selection_ttl_s=runtime["selection_ttl_s"],
             max_msg_age_s=runtime["max_msg_age_s"],
             log_file=runtime["log_file"],
+        ),
+        progress=ProgressConfig(
+            enable=progress.get("enable", True),
+            style=progress.get("style", "thread"),
+        ),
+        confirm=ConfirmConfig(
+            mode=confirm.get("mode", "always"),
+            ttl_s=confirm.get("ttl_s", 600),
         ),
     )
 

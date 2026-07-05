@@ -1,4 +1,5 @@
 import textwrap
+import re
 
 import pytest
 
@@ -100,3 +101,52 @@ def test_resolve_allowed_sender_fails_fast_when_unresolvable(tmp_path):
     cfg = load_config(_write(tmp_path, _MINIMAL), env={"DEEPSEEK_API_KEY": "k"})
     with pytest.raises(RuntimeError):
         resolve_allowed_sender(cfg, auth_status_fn=lambda: {})
+
+
+def _example_without(tmp_path, *sections):
+    body = open("config.example.toml", encoding="utf-8").read()
+    for s in sections:
+        body = re.sub(rf"(?ms)^\[{s}\].*?(?=^\[|\Z)", "", body)
+    p = tmp_path / "config.toml"
+    p.write_text(body, encoding="utf-8")
+    return str(p)
+
+
+_ENV = {"DEEPSEEK_API_KEY": "k", "LOCALAPPDATA": "x", "APPDATA": "y"}
+
+
+def test_progress_and_confirm_defaults_when_sections_missing(tmp_path):
+    cfg = load_config(_example_without(tmp_path, "progress", "confirm"), env=_ENV)
+    assert cfg.progress.enable is True
+    assert cfg.progress.style == "thread"
+    assert cfg.confirm.mode == "always"
+    assert cfg.confirm.ttl_s == 600
+
+
+def test_asst_log_path_defaults_empty_and_expands(tmp_path):
+    path = _example_without(tmp_path, "progress", "confirm")
+    cfg = load_config(path, env=_ENV)
+    assert cfg.maa.asst_log_path == ""
+    body = re.sub(
+        r'(?m)^asst_log_path\s*=.*$',
+        'asst_log_path = "%APPDATA%/loong/maa/debug/asst.log"',
+        open(path, encoding="utf-8").read(),
+        count=1,
+    )
+    open(path, "w", encoding="utf-8").write(body)
+    cfg2 = load_config(path, env=_ENV)
+    assert cfg2.maa.asst_log_path == "y/loong/maa/debug/asst.log"
+
+
+def test_progress_and_confirm_sections_override(tmp_path):
+    path = _example_without(tmp_path, "progress", "confirm")
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(
+            '\n[progress]\nenable = false\nstyle = "flat"\n'
+            '[confirm]\nmode = "spend_only"\nttl_s = 120\n'
+        )
+    cfg = load_config(path, env=_ENV)
+    assert cfg.progress.enable is False
+    assert cfg.progress.style == "flat"
+    assert cfg.confirm.mode == "spend_only"
+    assert cfg.confirm.ttl_s == 120
