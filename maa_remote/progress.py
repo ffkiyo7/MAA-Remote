@@ -4,6 +4,9 @@ import logging
 import re
 from dataclasses import dataclass
 
+from maa_remote.procutil import run_utf8
+from maa_remote.reporter import send_reply
+
 log = logging.getLogger("maa_remote.progress")
 
 
@@ -45,3 +48,54 @@ def parse_progress_line(line: str) -> ProgressEvent | None:
         if "TaskChainStopped" in line:
             return ProgressEvent("info", f"⏹️ {label}中止")
     return None
+
+
+class ProgressSender:
+    """把进度事件合并成简洁的飞书消息。任何异常只记日志，绝不影响执行。"""
+
+    def __init__(
+        self,
+        anchor_message_id: str | None,
+        trigger_message_id: str,
+        identity: str,
+        style: str = "thread",
+        runner=run_utf8,
+    ):
+        self.anchor = anchor_message_id
+        self.trigger = trigger_message_id
+        self.identity = identity
+        self.style = style if anchor_message_id else "flat"
+        self.runner = runner
+        self._pending_done: str | None = None
+
+    def handle(self, event: ProgressEvent) -> None:
+        try:
+            if event.phase == "start":
+                text = f"{self._pending_done} → {event.text}" if self._pending_done else event.text
+                self._pending_done = None
+                self._send(text)
+            elif event.phase == "done":
+                if self._pending_done:
+                    self._send(self._pending_done)
+                self._pending_done = event.text
+            elif event.phase == "error":
+                self.flush()
+                self._send(event.text)
+            else:
+                self._send(event.text)
+        except Exception:
+            log.exception("进度推送失败(不影响执行)")
+
+    def flush(self) -> None:
+        try:
+            if self._pending_done:
+                self._send(self._pending_done)
+                self._pending_done = None
+        except Exception:
+            log.exception("进度冲刷失败(不影响执行)")
+
+    def _send(self, text: str) -> None:
+        if self.style == "thread":
+            send_reply(self.anchor, text, self.identity, runner=self.runner, reply_in_thread=True)
+        else:
+            send_reply(self.trigger, text, self.identity, runner=self.runner)
