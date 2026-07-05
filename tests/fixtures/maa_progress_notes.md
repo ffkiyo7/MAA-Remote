@@ -8,7 +8,7 @@ Captured on 2026-07-05 with `.venv/Scripts/python scripts/capture_maa_output.py`
 - The run produced structured TaskChain events in MaaCore `asst.log`.
 - Signal source for implementation: tail `C:\Users\Blonde127\AppData\Roaming\loong\maa\data\debug\asst.log`.
 - `MAA_LOG=debug` is not required for TaskChainStart/TaskChainCompleted in this environment.
-- The capture run reached `Fight` and then kept running past one hour, so the `maa.exe` process started by the capture script was stopped manually. The fixture intentionally uses completed chains before that point plus `Fight` start.
+- 本次抓取运行进入 `Fight` 后超过一小时仍在继续，原因是账号较久未登录、理智大量溢出；MAA 正常代理刷了很多轮以清理溢出理智，并非卡死。抓到足够进度信号后，手动停止了抓取脚本启动的 `maa.exe` 进程。fixture 因此保留前面已完成链路和 `Fight` start。
 
 ## Event examples
 
