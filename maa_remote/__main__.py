@@ -123,6 +123,8 @@ def main(config_path: str = "config.toml") -> None:
         cfg.llm.api_key,
         cfg.llm.model,
         cfg.llm.request_timeout_s,
+        thinking=cfg.llm.thinking,
+        reasoning_effort=cfg.llm.reasoning_effort,
     )
     with open("schemas/task_plan.schema.json", encoding="utf-8") as f:
         schema = json.load(f)
