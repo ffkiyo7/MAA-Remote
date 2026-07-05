@@ -38,14 +38,54 @@ def _msg(text):
     )
 
 
-def test_fast_path_daily_bypasses_llm(tmp_path):
+def test_fast_path_daily_previews_then_confirm_executes(tmp_path):
     llm = FakeLLM("SHOULD_NOT_BE_CALLED")
     router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
     rr = router.route(_msg("跑日常"))
-    assert rr.kind == "execute"
-    assert rr.plan.fight.enable is True and rr.plan.recruit.enable is True
-    assert rr.plan.startup is True
+    assert rr.kind == "reply" and "📋" in rr.reply and "基建" in rr.reply
+    rr2 = router.route(_msg("1"))
+    assert rr2.kind == "execute" and rr2.plan.recruit.enable is True
     assert llm.calls == []
+
+
+def test_skip_prefix_bypasses_confirm(tmp_path):
+    router = Router(_cfg(tmp_path), FakeLLM("SHOULD_NOT_BE_CALLED"), PROMPT, SCHEMA)
+    rr = router.route(_msg("直接跑日常"))
+    assert rr.kind == "execute" and rr.plan.recruit.enable is True
+
+
+def test_skip_prefix_cannot_bypass_spend_confirmation(tmp_path):
+    cfg = _cfg(tmp_path)
+    cfg.maa.fight.medicine = 999
+    router = Router(cfg, FakeLLM("SHOULD_NOT_BE_CALLED"), PROMPT, SCHEMA)
+    rr = router.route(_msg("直接跑日常"))
+    assert rr.kind == "reply" and "⚠️" in rr.reply
+
+
+def test_new_command_replaces_pending_confirm(tmp_path):
+    llm = FakeLLM(json.dumps({"action": "run", "fight": {"enable": True, "stage": "CE-6"}}))
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("跑日常")).kind == "reply"
+    rr2 = router.route(_msg("刷CE-6"))
+    assert rr2.kind == "reply" and "CE-6" in rr2.reply
+    rr3 = router.route(_msg("确认"))
+    assert rr3.kind == "execute" and rr3.plan.fight.stage == "CE-6"
+
+
+def test_confirm_mode_spend_only_executes_daily_directly(tmp_path):
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    router = Router(cfg, FakeLLM("SHOULD_NOT_BE_CALLED"), PROMPT, SCHEMA)
+    assert router.route(_msg("跑日常")).kind == "execute"
+
+
+def test_confirm_uses_confirm_ttl(tmp_path):
+    clock = {"v": 0.0}
+    cfg = _cfg(tmp_path)
+    router = Router(cfg, FakeLLM("SHOULD_NOT_BE_CALLED"), PROMPT, SCHEMA, now_fn=lambda: clock["v"])
+    assert router.route(_msg("跑日常")).kind == "reply"
+    clock["v"] = 599.0
+    assert router.route(_msg("1")).kind == "execute"
 
 
 def test_llm_path_specific_stage(tmp_path):
@@ -58,7 +98,9 @@ def test_llm_path_specific_stage(tmp_path):
             }
         )
     )
-    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    router = Router(cfg, llm, PROMPT, SCHEMA)
     rr = router.route(_msg("打CE-6三次别做公招"))
     assert rr.kind == "execute"
     assert rr.plan.fight.stage == "CE-6" and rr.plan.fight.times == 3
@@ -84,8 +126,10 @@ def test_reject_and_clarify_are_reply_only(tmp_path):
 
 def test_ask_stage_selection_then_pick_executes_with_startup(tmp_path):
     stages = [StageInfo("测试当期", "TT-8", "本关效率最高", "x")]
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
     router = Router(
-        _cfg(tmp_path),
+        cfg,
         FakeLLM(json.dumps({"action": "ask_stage_selection"})),
         PROMPT,
         SCHEMA,
@@ -211,7 +255,7 @@ def test_confirmation_expires_by_ttl(tmp_path):
     rr = router.route(_msg("把囤药用了刷1-7"))
     assert rr.kind == "reply" and "确认" in rr.reply
 
-    clock["v"] = 301.0
+    clock["v"] = 601.0
     rr2 = router.route(_msg("确认"))
     assert rr2.kind == "reply"
 
@@ -229,7 +273,9 @@ def test_invalid_json_then_retry_success(tmp_path):
                 else json.dumps({"action": "run", "fight": {"enable": True}})
             )
 
-    router = Router(_cfg(tmp_path), FlakyLLM(), PROMPT, SCHEMA)
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    router = Router(cfg, FlakyLLM(), PROMPT, SCHEMA)
     rr = router.route(_msg("刷理智"))
     assert rr.kind == "execute"
 
@@ -247,7 +293,9 @@ def test_schema_violation_then_retry_success(tmp_path):
                 else json.dumps({"action": "run", "fight": {"enable": True}})
             )
 
-    router = Router(_cfg(tmp_path), FlakyLLM(), PROMPT, SCHEMA)
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    router = Router(cfg, FlakyLLM(), PROMPT, SCHEMA)
     rr = router.route(_msg("刷理智"))
     assert rr.kind == "execute"
 

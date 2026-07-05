@@ -9,12 +9,14 @@ from jsonschema import ValidationError, validate
 
 from maa_remote.config import Config
 from maa_remote.models import Fight, Msg, RouteResult, TaskPlan
+from maa_remote.preview import plan_preview
 from maa_remote.stage_catalog import format_menu, load_open_stages, resolve_selection
 
 
 FAST_PATH = {"跑日常", "日常", "daily", "跑一下日常", "托管", "托管一下"}
-CONFIRM_WORDS = {"确认", "确定", "是", "yes", "y"}
+CONFIRM_WORDS = {"确认", "确定", "是", "yes", "y", "1", "开始"}
 CANCEL_WORDS = {"取消", "算了", "不", "no", "n"}
+SKIP_CONFIRM_PREFIX = "直接"
 
 
 class Router:
@@ -41,8 +43,11 @@ class Router:
     def route(self, msg: Msg) -> RouteResult:
         pending_confirm = self._pending_confirm.get(msg.chat_id)
         if pending_confirm and self.now_fn() < pending_confirm[1]:
-            return self._handle_confirm(msg, pending_confirm[0])
-        if pending_confirm:
+            handled = self._handle_confirm(msg, pending_confirm[0])
+            if handled is not None:
+                return handled
+            self._pending_confirm.pop(msg.chat_id, None)
+        elif pending_confirm:
             self._pending_confirm.pop(msg.chat_id, None)
 
         pending_selection = self._pending_selection.get(msg.chat_id)
@@ -51,9 +56,16 @@ class Router:
         if pending_selection:
             self._pending_selection.pop(msg.chat_id, None)
 
-        if msg.text.strip() in FAST_PATH:
+        return self._route_fresh(msg)
+
+    def _route_fresh(self, msg: Msg) -> RouteResult:
+        text = msg.text.strip()
+        if text in FAST_PATH:
             plan = TaskPlan.daily(self.cfg.maa.fight, self.cfg.maa.daily_tasks)
             return self._maybe_confirm(msg, plan)
+        if text.startswith(SKIP_CONFIRM_PREFIX) and text[len(SKIP_CONFIRM_PREFIX) :].strip() in FAST_PATH:
+            plan = TaskPlan.daily(self.cfg.maa.fight, self.cfg.maa.daily_tasks)
+            return self._maybe_confirm(msg, plan, skip_confirm=True)
 
         plan_data = self._llm_plan(msg.text)
         if plan_data is None:
@@ -72,25 +84,23 @@ class Router:
 
         return self._maybe_confirm(msg, TaskPlan.from_llm_dict(plan_data, self.cfg.maa.fight))
 
-    def _maybe_confirm(self, msg: Msg, plan: TaskPlan) -> RouteResult:
+    def _maybe_confirm(self, msg: Msg, plan: TaskPlan, skip_confirm: bool = False) -> RouteResult:
         fight = plan.fight
-        if fight.enable and (fight.stone > 0 or fight.medicine > 0):
-            warnings = []
-            if fight.stone > 0:
-                warnings.append(f"碎 {fight.stone} 颗源石")
-            if fight.medicine > 0:
-                warnings.append(f"动用 {fight.medicine} 瓶囤积理智药")
-            self._pending_confirm[msg.chat_id] = (
-                plan,
-                self.now_fn() + self.cfg.runtime.selection_ttl_s,
-            )
-            return RouteResult(
-                kind="reply",
-                reply=f"⚠️ 这个计划会{'、'.join(warnings)}。回复「确认」执行，回复「取消」放弃。",
-            )
-        return RouteResult(kind="execute", reply=self.cfg.runtime.ack_reply, plan=plan)
+        spend = fight.enable and (fight.stone > 0 or fight.medicine > 0)
+        need_confirm = spend or (self.cfg.confirm.mode == "always" and not skip_confirm)
+        if not need_confirm:
+            return RouteResult(kind="execute", reply=self.cfg.runtime.ack_reply, plan=plan)
 
-    def _handle_confirm(self, msg: Msg, plan: TaskPlan) -> RouteResult:
+        text = plan_preview(plan, self.cfg)
+        if spend:
+            text = "⚠️ 本计划包含花费（碎石/动用囤药），请核对后再确认！\n" + text
+        self._pending_confirm[msg.chat_id] = (
+            plan,
+            self.now_fn() + self.cfg.confirm.ttl_s,
+        )
+        return RouteResult(kind="reply", reply=text)
+
+    def _handle_confirm(self, msg: Msg, plan: TaskPlan) -> RouteResult | None:
         text = msg.text.strip().lower()
         if text in CONFIRM_WORDS:
             self._pending_confirm.pop(msg.chat_id, None)
@@ -98,7 +108,7 @@ class Router:
         if text in CANCEL_WORDS:
             self._pending_confirm.pop(msg.chat_id, None)
             return RouteResult(kind="reply", reply="好的，已取消。")
-        return RouteResult(kind="reply", reply="回复「确认」执行这个计划，或「取消」放弃。")
+        return None
 
     def _handle_selection(self, msg: Msg, stages: list[Any]) -> RouteResult:
         code = resolve_selection(msg.text, stages)
