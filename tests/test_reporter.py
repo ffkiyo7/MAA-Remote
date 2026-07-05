@@ -58,6 +58,62 @@ def test_send_reply_invokes_lark_cli():
     assert calls[0][1]["timeout"] == 30
 
 
+def _runner_with_stdout(stdout, calls):
+    class R:
+        returncode = 0
+        stderr = ""
+
+    R.stdout = stdout
+
+    def runner(cmd, **kw):
+        calls.append(cmd)
+        return R()
+
+    return runner
+
+
+def test_send_reply_returns_message_id_from_nested_json():
+    calls = []
+    mid = send_reply(
+        "om_1",
+        "hi",
+        "bot",
+        runner=_runner_with_stdout('{"data":{"message_id":"om_new"}}', calls),
+    )
+    assert mid == "om_new"
+
+
+def test_send_reply_returns_top_level_message_id():
+    calls = []
+    assert (
+        send_reply(
+            "om_1",
+            "hi",
+            "bot",
+            runner=_runner_with_stdout('{"message_id":"om_x"}', calls),
+        )
+        == "om_x"
+    )
+
+
+def test_send_reply_returns_none_on_unparseable_output():
+    calls = []
+    assert send_reply("om_1", "hi", "bot", runner=_runner_with_stdout("oops", calls)) is None
+
+
+def test_send_reply_thread_flag_appends_arg():
+    calls = []
+    send_reply("om_1", "hi", "bot", runner=_runner_with_stdout("{}", calls), reply_in_thread=True)
+    assert "--reply-in-thread" in calls[0]
+
+
+def test_send_reply_swallows_runner_exception():
+    def boom(cmd, **kw):
+        raise OSError("lark-cli missing")
+
+    assert send_reply("om_1", "hi", "bot", runner=boom) is None
+
+
 def test_report_sends_summary():
     sent = {}
 
