@@ -4,7 +4,7 @@ import json
 import logging
 
 from maa_remote.models import ExecResult, Msg
-from maa_remote.procutil import resolve_executable, run_utf8
+from maa_remote.procutil import lark_profile_args, resolve_executable, run_utf8
 
 log = logging.getLogger("maa_remote.reporter")
 
@@ -64,6 +64,7 @@ def send_reply(
     identity: str,
     runner=run_utf8,
     reply_in_thread: bool = False,
+    profile: str = "",
 ) -> str | None:
     log.info("发送飞书回复: message_id=%s identity=%s thread=%s", message_id, identity, reply_in_thread)
     content = json.dumps({"text": text}, ensure_ascii=False)
@@ -80,6 +81,7 @@ def send_reply(
         "--as",
         identity,
         "--json",
+        *lark_profile_args(profile),
     ]
     if reply_in_thread:
         cmd.append("--reply-in-thread")
@@ -94,6 +96,6 @@ def send_reply(
     return _extract_message_id(getattr(proc, "stdout", ""))
 
 
-def report(result: ExecResult, msg: Msg, llm, identity: str, runner=run_utf8) -> None:
+def report(result: ExecResult, msg: Msg, llm, identity: str, runner=run_utf8, profile: str = "") -> None:
     summary = build_summary(result, msg.text, llm)
-    send_reply(msg.message_id, summary, identity, runner=runner)
+    send_reply(msg.message_id, summary, identity, runner=runner, profile=profile)

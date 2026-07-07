@@ -21,6 +21,7 @@ class LarkConfig:
     app_id: str
     identity: str
     event_key: str
+    profile: str = ""
 
 
 @dataclass
@@ -124,6 +125,7 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
             app_id=lark["app_id"],
             identity=lark["identity"],
             event_key=lark["event_key"],
+            profile=lark.get("profile", ""),
         ),
         llm=LLMConfig(
             provider=llm["provider"],

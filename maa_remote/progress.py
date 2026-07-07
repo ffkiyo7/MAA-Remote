@@ -60,12 +60,14 @@ class ProgressSender:
         identity: str,
         style: str = "thread",
         runner=run_utf8,
+        profile: str = "",
     ):
         self.anchor = anchor_message_id
         self.trigger = trigger_message_id
         self.identity = identity
         self.style = style if anchor_message_id else "flat"
         self.runner = runner
+        self.profile = profile
         self._pending_done: str | None = None
 
     def handle(self, event: ProgressEvent) -> None:
@@ -95,7 +97,15 @@ class ProgressSender:
             log.exception("进度冲刷失败(不影响执行)")
 
     def _send(self, text: str) -> None:
+        profile_kw = {"profile": self.profile} if self.profile else {}
         if self.style == "thread":
-            send_reply(self.anchor, text, self.identity, runner=self.runner, reply_in_thread=True)
+            send_reply(
+                self.anchor,
+                text,
+                self.identity,
+                runner=self.runner,
+                reply_in_thread=True,
+                **profile_kw,
+            )
         else:
-            send_reply(self.trigger, text, self.identity, runner=self.runner)
+            send_reply(self.trigger, text, self.identity, runner=self.runner, **profile_kw)

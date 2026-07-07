@@ -8,7 +8,7 @@ from collections.abc import Iterator
 
 from maa_remote.config import Config
 from maa_remote.models import Msg
-from maa_remote.procutil import resolve_executable
+from maa_remote.procutil import lark_profile_args, lark_subprocess_env, resolve_executable
 
 
 log = logging.getLogger(__name__)
@@ -117,6 +117,7 @@ def listen(
         "--as",
         identity,
         "--quiet",
+        *lark_profile_args(cfg.lark.profile),
     ]
     backoff_s = 1
 
@@ -128,6 +129,7 @@ def listen(
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=lark_subprocess_env(),
             )
             for raw_line in proc.stdout:
                 line = raw_line.strip()

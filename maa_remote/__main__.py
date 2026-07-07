@@ -10,7 +10,7 @@ from maa_remote.config import Config, load_config, resolve_allowed_sender
 from maa_remote.executor import execute as execute_task
 from maa_remote.listener import listen
 from maa_remote.llm import LLMClient
-from maa_remote.procutil import resolve_executable, run_utf8
+from maa_remote.procutil import lark_profile_args, resolve_executable, run_utf8
 from maa_remote.progress import ProgressSender
 from maa_remote.reporter import report, send_reply
 from maa_remote.router import Router
@@ -49,18 +49,19 @@ def handle_message(
     thread_factory=threading.Thread,
 ) -> None:
     route_result = router.route(msg)
+    profile = cfg.lark.profile
     log.info("消息路由: text=%r kind=%s identity=%s", msg.text, route_result.kind, identity)
     if route_result.kind == "reply":
-        send_reply(msg.message_id, route_result.reply, identity, runner=runner)
+        send_reply(msg.message_id, route_result.reply, identity, runner=runner, profile=profile)
         return
 
     if not lock.acquire(blocking=False):
-        send_reply(msg.message_id, cfg.runtime.busy_reply, identity, runner=runner)
+        send_reply(msg.message_id, cfg.runtime.busy_reply, identity, runner=runner, profile=profile)
         return
 
     anchor_id = None
     if route_result.reply:
-        anchor_id = send_reply(msg.message_id, route_result.reply, identity, runner=runner)
+        anchor_id = send_reply(msg.message_id, route_result.reply, identity, runner=runner, profile=profile)
 
     sender = None
     if cfg.progress.enable:
@@ -70,6 +71,7 @@ def handle_message(
             identity,
             cfg.progress.style,
             runner=runner,
+            profile=profile,
         )
 
     def _job() -> None:
@@ -83,18 +85,21 @@ def handle_message(
             )
             if sender is not None:
                 sender.flush()
-            report(result, msg, llm, identity, runner=runner)
+            report(result, msg, llm, identity, runner=runner, profile=profile)
         except Exception as exc:
             log.exception("worker 执行未捕获异常")
-            send_reply(msg.message_id, f"执行崩了：{exc}", identity, runner=runner)
+            send_reply(msg.message_id, f"执行崩了：{exc}", identity, runner=runner, profile=profile)
         finally:
             lock.release()
 
     thread_factory(target=_job, daemon=True).start()
 
 
-def _auth_status() -> dict:
-    result = run_utf8([resolve_executable("lark-cli"), "auth", "status"], timeout=30)
+def _auth_status(profile: str = "") -> dict:
+    result = run_utf8(
+        [resolve_executable("lark-cli"), "auth", "status", *lark_profile_args(profile)],
+        timeout=30,
+    )
     return _parse_auth_status_output(result.stdout)
 
 
@@ -116,7 +121,7 @@ def _parse_auth_status_output(stdout: str) -> dict:
 def main(config_path: str = "config.toml") -> None:
     cfg = load_config(config_path)
     setup_logging(cfg.runtime.log_file)
-    allowed_sender = resolve_allowed_sender(cfg, _auth_status)
+    allowed_sender = resolve_allowed_sender(cfg, lambda: _auth_status(cfg.lark.profile))
     identity = "bot" if cfg.lark.identity in ("auto", "bot") else cfg.lark.identity
 
     llm = LLMClient(
