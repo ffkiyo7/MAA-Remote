@@ -1,0 +1,252 @@
+{
+  "stage": "1-7",
+  "level_id": "obt/main/level_main_01-07",
+  "roster": "mock",
+  "fetched_at": "2026-07-07T17:48:00Z",
+  "total_fetched": 10,
+  "pass_count": 3,
+  "candidates": [
+    {
+      "id": 95988,
+      "pass": true,
+      "issues": [
+        "✅ 全部满足"
+      ],
+      "score": 76.4,
+      "uploader": "xanthuz2017",
+      "upload_time": "2026-06-19T06:24:25",
+      "views": 27,
+      "hot_score": 4.32898512266689,
+      "rating_level": 10,
+      "rating_ratio": 1.0,
+      "likes": 1,
+      "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+      "opers": [
+        "山"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": ""
+    },
+    {
+      "id": 94858,
+      "pass": true,
+      "issues": [
+        "✅ 全部满足"
+      ],
+      "score": 73.3,
+      "uploader": "Cytta",
+      "upload_time": "2026-06-01T13:40:00",
+      "views": 54,
+      "hot_score": 4.029464199808009,
+      "rating_level": 10,
+      "rating_ratio": 1.0,
+      "likes": 4,
+      "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+      "opers": [
+        "山"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": 3
+    },
+    {
+      "id": 95104,
+      "pass": true,
+      "issues": [
+        "✅ 全部满足"
+      ],
+      "score": 15.8,
+      "uploader": "玛恩纳自愿加班",
+      "upload_time": "2026-06-04T20:41:52",
+      "views": 182,
+      "hot_score": 4.644287440956133,
+      "rating_level": 0,
+      "rating_ratio": 0.0,
+      "likes": 0,
+      "title": "[1-7] 无核 挂件兼容高中低配",
+      "opers": [],
+      "groups": [
+        "[拦人先锋: 忍冬, 焰尾, 推进之王]",
+        "[坦克: 斩业星熊, 余, 涤火杰西卡]",
+        "[单法: 维什戴尔, 逻各斯, 荒芜拉普兰德]",
+        "[群法: 维什戴尔, 圣聆初雪, 林]",
+        "[速狙: 新约能天使, 能天使, 娜仁图亚]",
+        "[单奶: 纯烬艾雅法拉, 闪灵, 流明]"
+      ],
+      "doc_signals": [
+        "🟢 低配"
+      ],
+      "difficulty": ""
+    },
+    {
+      "id": 80348,
+      "pass": false,
+      "issues": [
+        "缺干员: 娜仁图亚"
+      ],
+      "score": 78.1,
+      "uploader": "Clazex",
+      "upload_time": "2026-02-13T12:38:23",
+      "views": 1369,
+      "hot_score": 3.82086854870804,
+      "rating_level": 10,
+      "rating_ratio": 1.0,
+      "likes": 55,
+      "title": "固源岩/绿土 - 1-7 - 娜仁图亚 单人 近理论最速",
+      "opers": [
+        "娜仁图亚 精2 60级 技能7"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": 1
+    },
+    {
+      "id": 95501,
+      "pass": false,
+      "issues": [
+        "缺干员: 娜仁图亚"
+      ],
+      "score": 76.7,
+      "uploader": "3277801833@qq.com",
+      "upload_time": "2026-06-14T07:18:46",
+      "views": 82,
+      "hot_score": 4.435604307916173,
+      "rating_level": 10,
+      "rating_ratio": 1.0,
+      "likes": 3,
+      "title": "第一章 黑暗时代·下 - 1-7 - 暴君娜仁图亚（未测试）",
+      "opers": [
+        "娜仁图亚 技能2(→精1)"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": 1
+    },
+    {
+      "id": 94637,
+      "pass": false,
+      "issues": [
+        "缺干员: 娜仁图亚"
+      ],
+      "score": 76.3,
+      "uploader": "Yamazaki",
+      "upload_time": "2026-05-28T21:12:54",
+      "views": 256,
+      "hot_score": 4.465282832334545,
+      "rating_level": 10,
+      "rating_ratio": 1.0,
+      "likes": 7,
+      "title": "1-7 暴君 娜仁图亚 单核 急速 刷石头 刷好感",
+      "opers": [
+        "娜仁图亚 60级"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": ""
+    },
+    {
+      "id": 95944,
+      "pass": false,
+      "issues": [
+        "缺干员: 煌"
+      ],
+      "score": 76.1,
+      "uploader": "xanthuz2017",
+      "upload_time": "2026-06-18T06:29:36",
+      "views": 28,
+      "hot_score": 4.329018456000224,
+      "rating_level": 10,
+      "rating_ratio": 1.0,
+      "likes": 1,
+      "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+      "opers": [
+        "煌"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": ""
+    },
+    {
+      "id": 93407,
+      "pass": false,
+      "issues": [
+        "缺干员: 丰川祥子"
+      ],
+      "score": 71.5,
+      "uploader": "xiqwqxi",
+      "upload_time": "2026-05-14T20:37:28",
+      "views": 427,
+      "hot_score": 4.384576305467894,
+      "rating_level": 9,
+      "rating_ratio": 0.9,
+      "likes": 25,
+      "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+      "opers": [
+        "丰川祥子 技能2(→精1) 90级 技能10"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": 3
+    },
+    {
+      "id": 96299,
+      "pass": false,
+      "issues": [
+        "缺干员: 逻各斯"
+      ],
+      "score": 19.3,
+      "uploader": "神秘逗猫男",
+      "upload_time": "2026-06-23T22:59:50",
+      "views": 37,
+      "hot_score": 5.462235359761024,
+      "rating_level": 0,
+      "rating_ratio": 0.0,
+      "likes": 0,
+      "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+      "opers": [
+        "逻各斯 技能10"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": ""
+    },
+    {
+      "id": 90958,
+      "pass": false,
+      "issues": [
+        "缺干员: 风笛",
+        "缺干员: 德克萨斯",
+        "缺干员: 仇白",
+        "缺干员: 丰川祥子",
+        "缺干员: 陈",
+        "缺干员: 帕拉斯",
+        "缺干员: 重岳",
+        "缺干员: 耀骑士临光"
+      ],
+      "score": 15.5,
+      "uploader": "yxflame",
+      "upload_time": "2026-05-19T22:32:59",
+      "views": 207,
+      "hot_score": 3.97257077585108,
+      "rating_level": 0,
+      "rating_ratio": 0.0,
+      "likes": 0,
+      "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+      "opers": [
+        "风笛 技能2(→精1)",
+        "德克萨斯 技能2(→精1)",
+        "仇白",
+        "丰川祥子 技能2(→精1)",
+        "银灰",
+        "陈 技能2(→精1)",
+        "帕拉斯",
+        "重岳 技能3(→精2)",
+        "耀骑士临光"
+      ],
+      "groups": [],
+      "doc_signals": [],
+      "difficulty": ""
+    }
+  ]
+}

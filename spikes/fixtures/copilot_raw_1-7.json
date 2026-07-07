@@ -1,0 +1,1270 @@
+[
+  {
+    "id": 96299,
+    "uploader": "神秘逗猫男",
+    "views": 37,
+    "hot_score": 5.462235359761024,
+    "rating_level": 0,
+    "rating_ratio": 0.0,
+    "content": {
+      "stage_name": "main_01-07",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+        "details": "自用补信赖"
+      },
+      "opers": [
+        {
+          "name": "逻各斯",
+          "skill": 1,
+          "requirements": {
+            "skill_level": 10,
+            "module": 4
+          }
+        }
+      ],
+      "groups": [],
+      "version": 3
+    }
+  },
+  {
+    "id": 95104,
+    "uploader": "玛恩纳自愿加班",
+    "views": 182,
+    "hot_score": 4.644287440956133,
+    "rating_level": 0,
+    "rating_ratio": 0.0,
+    "content": {
+      "stage_name": "main_01-07",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "[1-7] 无核 挂件兼容高中低配",
+        "details": "🌟日常图通用无核代理作战系列：固源岩\n全员精0一级即可\n================================\n单核/少核作业中的核默认均为精2后期巅峰(90级专3满级模组)💦\n若此关有挂件需要4星及以上 下方横线下会有说明💦\n干员组最低需求已经设置到精1后期 请勿勾选\"忽略干员属性要求\"💦\n默认开启截图增强💦\n活动期间作业会持续调整 越往后越稳定(代练自用，每期有百余号顺路测试作业稳定性)💦\nb站和作业网同名💦\n本关挂件全低星已测试通过💦\n=================================\n"
+      },
+      "opers": [],
+      "groups": [
+        {
+          "name": "拦人先锋",
+          "opers": [
+            {
+              "name": "忍冬",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 10
+              }
+            },
+            {
+              "name": "焰尾",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": 2
+              }
+            },
+            {
+              "name": "推进之王",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": 2
+              }
+            },
+            {
+              "name": "德克萨斯",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": 2
+              }
+            },
+            {
+              "name": "贾维",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": 2
+              }
+            },
+            {
+              "name": "红隼",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": 2
+              }
+            },
+            {
+              "name": "青枳",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "凛冬",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "清道夫",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "讯使",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "芬",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 7
+              }
+            }
+          ]
+        },
+        {
+          "name": "坦克",
+          "opers": [
+            {
+              "name": "斩业星熊",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "余",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "涤火杰西卡",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "信仰搅拌机",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "瑕光",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "星熊",
+              "skill": 2,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "年",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "雷蛇",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "拜松",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "暴雨",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "可颂",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "吽",
+              "skill": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "响石",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "菲莱",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "裂响",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "深巡",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "闪击",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "石棉",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "车尔尼",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "暮落",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "蛇屠箱",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "泡泡",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "角峰",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "米格鲁",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 1
+              }
+            },
+            {
+              "name": "卡缇",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 1
+              }
+            }
+          ]
+        },
+        {
+          "name": "单法",
+          "opers": [
+            {
+              "name": "维什戴尔",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "逻各斯",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": 4
+              }
+            },
+            {
+              "name": "荒芜拉普兰德",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "艾雅法拉",
+              "skill": 2,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "澄闪",
+              "skill": 2,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "真言",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "焰影苇草",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "缇缇",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "妮芙",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "刻俄柏",
+              "skill": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "霍尔海雅",
+              "skill": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "Miss.Christine",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "温米",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "折光",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "至简",
+              "skill": 2,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "耶拉",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "洛洛",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "苦艾",
+              "skill": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "雪绒",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "卡达",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "夜烟",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "史都华德",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 1
+              }
+            },
+            {
+              "name": "杜林",
+              "requirements": {
+                "level": 1
+              }
+            }
+          ]
+        },
+        {
+          "name": "群法",
+          "opers": [
+            {
+              "name": "维什戴尔",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "圣聆初雪",
+              "skill": 2,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "林",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "玛露西尔",
+              "skill": 2,
+              "skill_usage": 2,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": -1
+              }
+            },
+            {
+              "name": "烛煌",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "莫斯提马",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": 2
+              }
+            },
+            {
+              "name": "卡涅利安",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "异客",
+              "skill": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "复奏",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": -1
+              }
+            },
+            {
+              "name": "寒檀",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": -1
+              }
+            },
+            {
+              "name": "天火",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7,
+                "module": -1
+              }
+            },
+            {
+              "name": "莱恩哈特",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "星源",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "远山",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "布丁",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "炎熔",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 1
+              }
+            },
+            {
+              "name": "12F",
+              "requirements": {
+                "level": 1
+              }
+            }
+          ]
+        },
+        {
+          "name": "速狙",
+          "opers": [
+            {
+              "name": "新约能天使",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "能天使",
+              "skill": 3,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "娜仁图亚",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "灰烬",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "空弦",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "艾拉",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "寒芒克洛丝",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "蓝毒",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "白金",
+              "skill": 2,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "隐现",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "灰喉",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "水灯心",
+              "skill": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "跃跃",
+              "skill": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "梅",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "流星",
+              "skill": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "克洛丝",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 1
+              }
+            },
+            {
+              "name": "巡林者",
+              "requirements": {
+                "level": 1
+              }
+            }
+          ]
+        },
+        {
+          "name": "单奶",
+          "opers": [
+            {
+              "name": "纯烬艾雅法拉",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "闪灵",
+              "skill": 2,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "流明",
+              "skill": 3,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 10,
+                "module": 2
+              }
+            },
+            {
+              "name": "华法琳",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "录武官",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "赫默",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "亚叶",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "絮雨",
+              "skill": 2,
+              "requirements": {
+                "level": 1,
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "嘉维尔",
+              "skill": 1,
+              "skill_usage": 0,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "苏苏洛",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7
+              }
+            },
+            {
+              "name": "清流",
+              "skill": 2,
+              "skill_usage": 1,
+              "requirements": {
+                "skill_level": 7,
+                "module": 2
+              }
+            },
+            {
+              "name": "安赛尔",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 1
+              }
+            },
+            {
+              "name": "芙蓉",
+              "skill": 1,
+              "skill_usage": 1,
+              "requirements": {
+                "elite": 0,
+                "level": 1,
+                "skill_level": 1
+              }
+            }
+          ]
+        }
+      ],
+      "version": 3
+    }
+  },
+  {
+    "id": 94637,
+    "uploader": "Yamazaki",
+    "views": 256,
+    "hot_score": 4.465282832334545,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "stage_name": "main_01-07",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "1-7 暴君 娜仁图亚 单核 急速 刷石头 刷好感",
+        "details": "娜仁图亚单核急速挂机刷石头刷好感作业"
+      },
+      "opers": [
+        {
+          "name": "娜仁图亚",
+          "skill": 1,
+          "skill_usage": 0,
+          "requirements": {
+            "level": 60,
+            "module": -1
+          }
+        }
+      ],
+      "groups": [],
+      "version": 3
+    }
+  },
+  {
+    "id": 95501,
+    "uploader": "3277801833@qq.com",
+    "views": 82,
+    "hot_score": 4.435604307916173,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "minimum_required": "v6.0.0",
+      "stage_name": "main_01-07",
+      "doc": {
+        "title": "第一章 黑暗时代·下 - 1-7 - 暴君娜仁图亚（未测试）",
+        "details": "第一章 黑暗时代·下 - 1-7 - 暴君"
+      },
+      "groups": [],
+      "opers": [
+        {
+          "name": "娜仁图亚",
+          "skill": 2,
+          "skill_usage": 0
+        }
+      ],
+      "difficulty": 1
+    }
+  },
+  {
+    "id": 93407,
+    "uploader": "xiqwqxi",
+    "views": 427,
+    "hot_score": 4.384576305467894,
+    "rating_level": 9,
+    "rating_ratio": 0.9,
+    "content": {
+      "stage_name": "main_01-07",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+        "details": "第一章 黑暗时代·下 - 1-7 - 暴君"
+      },
+      "opers": [
+        {
+          "name": "丰川祥子",
+          "skill": 2,
+          "requirements": {
+            "level": 90,
+            "skill_level": 10,
+            "module": 2
+          }
+        }
+      ],
+      "groups": [],
+      "version": 3,
+      "difficulty": 3
+    }
+  },
+  {
+    "id": 95944,
+    "uploader": "xanthuz2017",
+    "views": 28,
+    "hot_score": 4.329018456000224,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "stage_name": "main_01-07",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+        "details": "第一章 黑暗时代·下 - 1-7 - 暴君"
+      },
+      "opers": [
+        {
+          "name": "煌"
+        }
+      ],
+      "groups": [],
+      "version": 3
+    }
+  },
+  {
+    "id": 95988,
+    "uploader": "xanthuz2017",
+    "views": 27,
+    "hot_score": 4.32898512266689,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "stage_name": "main_01-07",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+        "details": "第一章 黑暗时代·下 - 1-7 - 暴君"
+      },
+      "opers": [
+        {
+          "name": "山",
+          "skill_usage": 0
+        }
+      ],
+      "groups": [],
+      "version": 3
+    }
+  },
+  {
+    "id": 94858,
+    "uploader": "Cytta",
+    "views": 54,
+    "hot_score": 4.029464199808009,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "minimum_required": "v6.0.0",
+      "stage_name": "main_01-07",
+      "doc": {
+        "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+        "details": "自用1"
+      },
+      "groups": [],
+      "opers": [
+        {
+          "name": "山"
+        }
+      ],
+      "difficulty": 3
+    }
+  },
+  {
+    "id": 90958,
+    "uploader": "yxflame",
+    "views": 207,
+    "hot_score": 3.97257077585108,
+    "rating_level": 0,
+    "rating_ratio": 0.0,
+    "content": {
+      "minimum_required": "v6.0.0",
+      "stage_name": "main_01-07",
+      "doc": {
+        "title": "第一章 黑暗时代·下 - 1-7 - 暴君",
+        "details": "第一章 黑暗时代·下 - 1-7 - 暴君"
+      },
+      "groups": [],
+      "opers": [
+        {
+          "name": "风笛",
+          "skill": 2,
+          "skill_usage": 0
+        },
+        {
+          "name": "德克萨斯",
+          "skill": 2,
+          "skill_usage": 1
+        },
+        {
+          "name": "仇白",
+          "skill": 1,
+          "skill_usage": 0
+        },
+        {
+          "name": "丰川祥子",
+          "skill": 2,
+          "skill_usage": 0
+        },
+        {
+          "name": "银灰",
+          "skill": 1,
+          "skill_usage": 0
+        },
+        {
+          "name": "陈",
+          "skill": 2,
+          "skill_usage": 0
+        },
+        {
+          "name": "帕拉斯",
+          "skill": 1,
+          "skill_usage": 0
+        },
+        {
+          "name": "重岳",
+          "skill": 3,
+          "skill_usage": 1
+        },
+        {
+          "name": "耀骑士临光",
+          "skill": 1,
+          "skill_usage": 0
+        }
+      ]
+    }
+  },
+  {
+    "id": 80348,
+    "uploader": "Clazex",
+    "views": 1369,
+    "hot_score": 3.82086854870804,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "stage_name": "main_01-07",
+      "minimum_required": "v4.0.0",
+      "doc": {
+        "title": "固源岩/绿土 - 1-7 - 娜仁图亚 单人 近理论最速",
+        "details": "JSON作者：Clazex\n参考视频（有修改）：https://b23.tv/BV1sAfhYEEK3 浅夏の梦\n"
+      },
+      "opers": [
+        {
+          "name": "娜仁图亚",
+          "skill": 2,
+          "requirements": {
+            "elite": 2,
+            "level": 60,
+            "skill_level": 7
+          }
+        }
+      ],
+      "groups": [],
+      "version": 3,
+      "difficulty": 1
+    }
+  }
+]
