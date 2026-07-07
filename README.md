@@ -5,6 +5,7 @@
 - 设计背景与决策：[CONTEXT.md](CONTEXT.md)
 - 详细设计（模块接口/配置/错误矩阵）：[SPEC.md](SPEC.md)
 - 实现计划（照着逐任务执行）：[docs/plans/2026-07-04-maa-remote.md](docs/plans/2026-07-04-maa-remote.md)
+- 抄作业打活动关（设计草案，待 Spike）：[docs/superpowers/specs/2026-07-07-copilot-auto-battle-design.md](docs/superpowers/specs/2026-07-07-copilot-auto-battle-design.md)
 
 ## 前置依赖
 
