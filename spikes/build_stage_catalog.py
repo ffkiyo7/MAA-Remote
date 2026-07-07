@@ -33,22 +33,25 @@ def main():
             act_stages[ct] = lid
             act_level_to_disp[lid] = ct
 
-    # 去重 (优先非 #f#；记录碰撞)
+    # 去重 (优先非 #f#；记录真实碰撞 — 指向多个不同 level_id 的复用显示号)
     dedup = {}
-    collisions = []
+    collision_map = {}  # 显示号 -> [level_id, ...]  供 copilot_catalog 消歧告警
     for ct, lids in display_to_level.items():
         normal = [l for l in lids if "#f#" not in l]
-        if len(normal) > 1:
-            collisions.append({"display": ct, "level_ids": normal, "chosen": normal[0]})
+        # 去掉指向同一 level_id 的重复, 只有真正多目标才算碰撞 (§评审 P1)
+        distinct = list(dict.fromkeys(normal))
+        if len(distinct) > 1:
+            collision_map[ct] = distinct
         dedup[ct] = normal[0] if normal else lids[0]
-    if collisions:
-        print(f"  ⚠️  去重碰撞 ({len(collisions)} 个显示号有多非fog level_id):")
-        for c in collisions[:5]:
-            print(f"    {c['display']}: {c['level_ids']} → 选了 {c['chosen']}")
+    if collision_map:
+        print(f"  ⚠️  去重碰撞 ({len(collision_map)} 个显示号跨活动复用, 指向多个 level_id):")
+        for ct, distinct in list(collision_map.items())[:5]:
+            print(f"    {ct}: {distinct} → 默认 {dedup[ct]} (下游可 --level-id 消歧)")
 
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     full = {"fetched_at": now, "total": len(levels),
             "display_to_level": dedup, "stage_to_level": stage_to_level,
+            "display_collisions": collision_map,
             "activity_stages": act_stages, "activity_level_to_display": act_level_to_disp}
     with open(os.path.join(OUT, "stage_catalog.json"), "w", encoding="utf-8") as f:
         json.dump(full, f, ensure_ascii=False, indent=2)

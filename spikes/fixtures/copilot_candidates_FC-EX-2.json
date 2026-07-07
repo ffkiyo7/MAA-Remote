@@ -2,16 +2,20 @@
   "stage": "FC-EX-2",
   "level_id": "activities/act22side/level_act22side_ex02",
   "roster": "mock",
-  "fetched_at": "2026-07-07T17:47:53Z",
-  "total_fetched": 10,
-  "pass_count": 3,
+  "fetched_at": "2026-07-07T21:39:34Z",
+  "total_fetched": 5,
+  "pass_count": 0,
+  "pass_clean_count": 0,
   "candidates": [
     {
       "id": 52492,
-      "pass": true,
+      "pass": false,
+      "risky": false,
       "issues": [
-        "✅ 全部满足"
+        "分组[德克萨斯] 无可用干员",
+        "分组[煌] 无可用干员"
       ],
+      "risks": [],
       "score": 76.3,
       "uploader": "渔鱼御雨",
       "upload_time": "2025-05-06T00:31:11",
@@ -34,68 +38,70 @@
       "difficulty": 0
     },
     {
-      "id": 29371,
-      "pass": true,
+      "id": 31272,
+      "pass": false,
+      "risky": false,
       "issues": [
-        "✅ 全部满足"
+        "缺干员: 令",
+        "缺干员: 夜刀"
       ],
-      "score": 75.5,
-      "uploader": "Issuing2890",
-      "upload_time": "2023-10-24T21:45:34",
-      "views": 2070,
-      "hot_score": 1.5961229889359863,
-      "rating_level": 10,
-      "rating_ratio": 1.0,
-      "likes": 232,
-      "title": "照我以火 - FC-EX-2 - 突袭",
+      "risks": [],
+      "score": 73.6,
+      "uploader": "小卡拉帕鲁灰",
+      "upload_time": "2026-02-28T17:51:37",
+      "views": 3003,
+      "hot_score": 4.964480072578277,
+      "rating_level": 9,
+      "rating_ratio": 0.9,
+      "likes": 342,
+      "title": "照我以火 - FC-EX-2 - 夜间巡逻 - 令单 ",
       "opers": [
-        "银灰",
-        "艾雅法拉 技能2(→精1)",
-        "塞雷娅",
-        "能天使 技能3(→精2)"
+        "令 精2 90级",
+        "夜刀"
       ],
-      "groups": [
-        "[速射手: 空弦, 灰烬, 白金]"
-      ],
+      "groups": [],
       "doc_signals": [],
       "difficulty": 3
     },
     {
-      "id": 45316,
-      "pass": true,
+      "id": 96597,
+      "pass": false,
+      "risky": false,
       "issues": [
-        "✅ 全部满足"
+        "缺干员: 维什戴尔",
+        "缺干员: 可露希尔"
       ],
-      "score": 73.9,
-      "uploader": "莱欧斯利",
-      "upload_time": "2025-01-06T00:27:33",
-      "views": 418,
-      "hot_score": 1.369758582436063,
-      "rating_level": 10,
-      "rating_ratio": 1.0,
-      "likes": 27,
-      "title": "照我以火 - FC-EX-2 - 夜间巡逻",
+      "risks": [],
+      "score": 19.6,
+      "uploader": "二狗子1223",
+      "upload_time": "2026-06-28T20:29:20",
+      "views": 20,
+      "hot_score": 5.462435359761025,
+      "rating_level": 0,
+      "rating_ratio": 0,
+      "likes": 0,
+      "title": "涤墨作战200挂机",
       "opers": [
-        "能天使 技能3(→精2)"
+        "维什戴尔 技能3(→精2)",
+        "可露希尔"
       ],
-      "groups": [
-        "[奶: 纯烬艾雅法拉, 流明, 闪灵]",
-        "[德克萨斯: 德克萨斯, 伊内丝]",
-        "[艾雅法拉: 逻各斯, 艾雅法拉]",
-        "[煌: 乌尔比安, 煌]"
-      ],
+      "groups": [],
       "doc_signals": [],
-      "difficulty": 0
+      "difficulty": ""
     },
     {
       "id": 89036,
       "pass": false,
+      "risky": true,
       "issues": [
-        "缺干员: 凛御银灰",
         "缺干员: 圣聆初雪",
-        "塞雷娅: 技能7<要求10 (⚠️ 盲区)"
+        "分组[工具人] 无可用干员"
       ],
-      "score": 79.2,
+      "risks": [
+        "凛御银灰: 技能等级未知 (要求10, OperBox 盲区)",
+        "塞雷娅: 技能等级未知 (要求10, OperBox 盲区)"
+      ],
+      "score": 77.7,
       "uploader": "otherwise",
       "upload_time": "2026-03-26T18:05:13",
       "views": 1094,
@@ -116,42 +122,17 @@
       "difficulty": 3
     },
     {
-      "id": 47159,
-      "pass": false,
-      "issues": [
-        "缺干员: 煌",
-        "缺干员: 逻各斯"
-      ],
-      "score": 75.9,
-      "uploader": "一位路过的博士",
-      "upload_time": "2025-02-15T17:04:48",
-      "views": 1079,
-      "hot_score": 1.786254474752183,
-      "rating_level": 10,
-      "rating_ratio": 1.0,
-      "likes": 216,
-      "title": "照我以火 - FC-EX-2 - 夜间巡逻（自用）",
-      "opers": [
-        "煌 技能2(→精1)",
-        "能天使 技能3(→精2)",
-        "逻各斯"
-      ],
-      "groups": [
-        "[奶: 纯烬艾雅法拉, 闪灵]",
-        "[先锋: 嵯峨, 德克萨斯]"
-      ],
-      "doc_signals": [],
-      "difficulty": 3
-    },
-    {
       "id": 91063,
       "pass": false,
+      "risky": true,
       "issues": [
-        "缺干员: 凛御银灰",
         "缺干员: 圣聆初雪",
         "缺干员: 砾"
       ],
-      "score": 74.3,
+      "risks": [
+        "凛御银灰: 技能等级未知 (要求10, OperBox 盲区)"
+      ],
+      "score": 74.8,
       "uploader": "神秘逗猫男",
       "upload_time": "2026-04-23T21:14:59",
       "views": 180,
@@ -169,110 +150,6 @@
       "groups": [],
       "doc_signals": [],
       "difficulty": 3
-    },
-    {
-      "id": 31272,
-      "pass": false,
-      "issues": [
-        "缺干员: 令",
-        "缺干员: 夜刀"
-      ],
-      "score": 73.7,
-      "uploader": "小卡拉帕鲁灰",
-      "upload_time": "2026-02-28T17:51:37",
-      "views": 3003,
-      "hot_score": 5.133477111053038,
-      "rating_level": 9,
-      "rating_ratio": 0.9,
-      "likes": 341,
-      "title": "照我以火 - FC-EX-2 - 夜间巡逻 - 令单 ",
-      "opers": [
-        "令 精2 90级",
-        "夜刀"
-      ],
-      "groups": [],
-      "doc_signals": [],
-      "difficulty": 3
-    },
-    {
-      "id": 31239,
-      "pass": false,
-      "issues": [
-        "缺干员: 德克萨斯",
-        "缺干员: 煌"
-      ],
-      "score": 72.1,
-      "uploader": "萨拉托加",
-      "upload_time": "2023-12-22T07:45:00",
-      "views": 10876,
-      "hot_score": 0.03334494185564643,
-      "rating_level": 10,
-      "rating_ratio": 1.0,
-      "likes": 1506,
-      "title": "照我以火 - FC-EX-2 - 夜间巡逻",
-      "opers": [
-        "德克萨斯",
-        "煌 技能2(→精1)",
-        "能天使 技能3(→精2)",
-        "艾雅法拉 技能2(→精1)"
-      ],
-      "groups": [
-        "[奶: 纯烬艾雅法拉, 闪灵]"
-      ],
-      "doc_signals": [],
-      "difficulty": 3
-    },
-    {
-      "id": 31336,
-      "pass": false,
-      "issues": [
-        "缺干员: 德克萨斯",
-        "缺干员: 煌"
-      ],
-      "score": 70.0,
-      "uploader": "Chiho",
-      "upload_time": "2023-12-25T09:54:50",
-      "views": 305,
-      "hot_score": 0.012271358138382388,
-      "rating_level": 10,
-      "rating_ratio": 1.0,
-      "likes": 20,
-      "title": "照我以火 - FC-EX-2 - 夜间巡逻",
-      "opers": [
-        "德克萨斯",
-        "煌 技能2(→精1)",
-        "能天使 技能3(→精2)",
-        "艾雅法拉 技能2(→精1)"
-      ],
-      "groups": [
-        "[奶: 流明, 纯烬艾雅法拉, 闪灵]"
-      ],
-      "doc_signals": [],
-      "difficulty": 3
-    },
-    {
-      "id": 96597,
-      "pass": false,
-      "issues": [
-        "缺干员: 维什戴尔",
-        "缺干员: 可露希尔"
-      ],
-      "score": 21.5,
-      "uploader": "二狗子1223",
-      "upload_time": "2026-06-28T20:29:20",
-      "views": 20,
-      "hot_score": 8.65717024533378,
-      "rating_level": 0,
-      "rating_ratio": 0.0,
-      "likes": 0,
-      "title": "涤墨作战200挂机",
-      "opers": [
-        "维什戴尔 技能3(→精2)",
-        "可露希尔"
-      ],
-      "groups": [],
-      "doc_signals": [],
-      "difficulty": ""
     }
   ]
 }
