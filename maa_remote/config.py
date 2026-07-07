@@ -42,6 +42,7 @@ class FightConfig:
     expiring_medicine: bool
     medicine: int
     stone: int
+    series: int = 0
 
 
 @dataclass
@@ -151,6 +152,7 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
                 expiring_medicine=fight["expiring_medicine"],
                 medicine=fight["medicine"],
                 stone=fight["stone"],
+                series=fight.get("series", 0),
             ),
         ),
         emulator=EmulatorConfig(

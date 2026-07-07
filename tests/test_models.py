@@ -16,6 +16,15 @@ def test_from_llm_dict_applies_fight_defaults():
     assert plan.fight.times == 3
     assert plan.fight.expiring_medicine is True
     assert plan.fight.medicine == 0 and plan.fight.stone == 0
+    assert plan.fight.series == 0
+
+
+def test_from_llm_dict_accepts_fixed_series():
+    plan = TaskPlan.from_llm_dict(
+        {"action": "run", "fight": {"enable": True, "stage": "CE-6", "series": 6}},
+        DEF,
+    )
+    assert plan.fight.series == 6
 
 
 def test_from_llm_dict_disables_subtask():
@@ -35,6 +44,7 @@ def test_daily_builds_full_plan():
     assert plan.action == "run"
     assert plan.startup is True
     assert plan.fight.enable is True and plan.fight.expiring_medicine is True
+    assert plan.fight.series == 0
     assert plan.recruit.enable and plan.mall.enable and plan.award.enable
 
 

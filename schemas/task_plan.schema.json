@@ -9,8 +9,8 @@
   "properties": {
     "action": {
       "type": "string",
-      "enum": ["run", "ask_stage_selection", "clarify", "reject"],
-      "description": "run=直接执行；ask_stage_selection=想刷活动但没定具体关，触发关卡菜单；clarify=意图不清需追问；reject=非任务/超范围，礼貌拒答"
+      "enum": ["run", "ask_stage_selection", "clarify", "reject", "advise", "approve", "patch"],
+      "description": "run=执行计划；ask_stage_selection=想刷活动但没定具体关，触发关卡菜单；clarify=意图不清需追问；reject=非任务/超范围；advise=只读建议；approve=确认态同意执行；patch=确认态修改 pending plan"
     },
     "startup": {
       "type": "boolean",
@@ -80,6 +80,12 @@
           "minimum": 0,
           "maximum": 999,
           "description": "碎石数量。默认 0（绝不碎石）。仅用户明确要求碎石时才 >0；>0 时 Router 会先向用户二次确认再执行"
+        },
+        "series": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 6,
+          "description": "代理连战倍率。0=由 MAA 按当前理智自动选择最大可用倍率；1~6=指定倍率；-1=禁用切换。默认 0"
         }
       },
       "required": ["enable"]
@@ -91,12 +97,74 @@
     "note": {
       "type": "string",
       "description": "对用户原始意图的简短复述，供 Reporter 润色汇报时参考"
+    },
+    "advise_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "action=advise 时使用；只能引用 snapshot 中存在的关卡 code 或 alias stage，最终回复由 Router 渲染"
+    },
+    "patch": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "action=patch 时使用；只包含用户明确要修改的 TaskPlan 字段子集",
+      "properties": {
+        "startup": { "type": "boolean" },
+        "recruit": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enable": { "type": "boolean" },
+            "max_times": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            }
+          }
+        },
+        "infrast": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "enable": { "type": "boolean" } }
+        },
+        "mall": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "enable": { "type": "boolean" } }
+        },
+        "award": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "enable": { "type": "boolean" } }
+        },
+        "fight": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enable": { "type": "boolean" },
+            "stage": { "type": "string" },
+            "times": { "type": "integer", "minimum": 1 },
+            "expiring_medicine": { "type": "boolean" },
+            "medicine": { "type": "integer", "minimum": 0, "maximum": 999 },
+            "stone": { "type": "integer", "minimum": 0, "maximum": 999 },
+            "series": { "type": "integer", "minimum": -1, "maximum": 6 }
+          }
+        },
+        "note": { "type": "string" }
+      }
     }
   },
   "allOf": [
     {
       "if": { "properties": { "action": { "const": "clarify" } } },
       "then": { "required": ["action", "clarify_question"] }
+    },
+    {
+      "if": { "properties": { "action": { "const": "patch" } } },
+      "then": { "required": ["action", "patch"] }
+    },
+    {
+      "if": { "properties": { "action": { "const": "advise" } } },
+      "then": { "required": ["action", "advise_refs"] }
     }
   ]
 }

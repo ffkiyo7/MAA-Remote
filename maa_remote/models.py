@@ -31,6 +31,7 @@ class Fight:
     expiring_medicine: bool = True
     medicine: int = 0
     stone: int = 0
+    series: int | None = None
 
 
 @dataclass
@@ -79,6 +80,7 @@ class TaskPlan:
                 ),
                 medicine=fight.get("medicine", fight_defaults.medicine),
                 stone=fight.get("stone", fight_defaults.stone),
+                series=fight.get("series", fight_defaults.series),
             ),
             clarify_question=data.get("clarify_question", ""),
             note=data.get("note", ""),
@@ -99,6 +101,7 @@ class TaskPlan:
                 expiring_medicine=fight_defaults.expiring_medicine,
                 medicine=fight_defaults.medicine,
                 stone=fight_defaults.stone,
+                series=fight_defaults.series,
             ),
             note="跑日常",
         )

@@ -28,6 +28,16 @@ class FakeLLM:
         return self.reply
 
 
+class QueueLLM:
+    def __init__(self, replies):
+        self.replies = list(replies)
+        self.calls = []
+
+    def chat(self, system, user, json_mode=False):
+        self.calls.append((system, user, json_mode))
+        return self.replies.pop(0)
+
+
 def _msg(text):
     return Msg(
         text=text,
@@ -63,13 +73,146 @@ def test_skip_prefix_cannot_bypass_spend_confirmation(tmp_path):
 
 
 def test_new_command_replaces_pending_confirm(tmp_path):
-    llm = FakeLLM(json.dumps({"action": "run", "fight": {"enable": True, "stage": "CE-6"}}))
+    llm = FakeLLM(json.dumps({"action": "patch", "patch": {"fight": {"stage": "CE-6"}}}))
     router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
     assert router.route(_msg("跑日常")).kind == "reply"
     rr2 = router.route(_msg("刷CE-6"))
     assert rr2.kind == "reply" and "CE-6" in rr2.reply
     rr3 = router.route(_msg("确认"))
     assert rr3.kind == "execute" and rr3.plan.fight.stage == "CE-6"
+
+
+def test_pending_confirm_update_keeps_daily_and_changes_fight_stage(tmp_path):
+    llm = FakeLLM(
+        json.dumps({"action": "patch", "patch": {"fight": {"stage": "CE-6"}}})
+    )
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("daily")).kind == "reply"
+
+    rr = router.route(_msg("ok, but change the fight stage to CE-6"))
+    assert rr.kind == "reply" and "CE-6" in rr.reply
+    assert "TaskPlan JSON" in llm.calls[0][1]
+
+    rr2 = router.route(_msg("1"))
+    assert rr2.kind == "execute"
+    assert rr2.plan.fight.stage == "CE-6"
+    assert rr2.plan.recruit.enable is True
+    assert rr2.plan.infrast.enable is True
+
+
+def test_pending_confirm_update_preserves_disabled_tasks(tmp_path):
+    llm = QueueLLM(
+        [
+            json.dumps(
+                {
+                    "action": "run",
+                    "recruit": {"enable": False},
+                    "infrast": {"enable": False},
+                    "mall": {"enable": False},
+                    "award": {"enable": False},
+                    "fight": {"enable": True, "stage": ""},
+                }
+            ),
+            json.dumps({"action": "patch", "patch": {"fight": {"stage": "CE-6"}}}),
+        ]
+    )
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("fight only")).kind == "reply"
+    rr = router.route(_msg("change to CE-6"))
+    assert rr.kind == "reply" and "CE-6" in rr.reply
+
+    rr2 = router.route(_msg("1"))
+    assert rr2.kind == "execute"
+    assert rr2.plan.fight.stage == "CE-6"
+    assert rr2.plan.recruit.enable is False
+    assert rr2.plan.infrast.enable is False
+
+
+def test_pending_confirm_pure_ok_words_execute_without_llm_loop(tmp_path):
+    llm = FakeLLM("SHOULD_NOT_BE_CALLED")
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("跑日常")).kind == "reply"
+    rr = router.route(_msg("可以"))
+    assert rr.kind == "execute"
+    assert llm.calls == []
+
+
+def test_pending_confirm_approve_action_executes(tmp_path):
+    llm = FakeLLM(json.dumps({"action": "approve"}))
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("跑日常")).kind == "reply"
+    rr = router.route(_msg("yes please"))
+    assert rr.kind == "execute"
+    assert rr.plan.recruit.enable is True
+
+
+def test_pending_confirm_patch_spend_requires_second_confirmation(tmp_path):
+    llm = FakeLLM(
+        json.dumps({"action": "patch", "patch": {"fight": {"stone": 1, "stage": "CE-6"}}})
+    )
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("跑日常")).kind == "reply"
+    rr = router.route(_msg("可以，再碎一颗石头刷 CE-6"))
+    assert rr.kind == "reply"
+    assert "⚠️" in rr.reply and "CE-6" in rr.reply
+
+    rr2 = router.route(_msg("确认"))
+    assert rr2.kind == "execute"
+    assert rr2.plan.fight.stone == 1
+
+
+def test_confirm_to_stage_selection_pops_pending_confirm_and_uses_menu_choice(tmp_path):
+    stages = [StageInfo("测试当期", "TT-8", "本关效率最高", "x")]
+    llm = FakeLLM(json.dumps({"action": "ask_stage_selection"}))
+    router = Router(
+        _cfg(tmp_path),
+        llm,
+        PROMPT,
+        SCHEMA,
+        stage_loader=lambda path, client, now=None: stages,
+    )
+    assert router.route(_msg("跑日常")).kind == "reply"
+    menu = router.route(_msg("换个活动关吧"))
+    assert menu.kind == "reply" and "TT-8" in menu.reply
+    assert "oc_1" not in router._pending_confirm
+
+    rr = router.route(_msg("1"))
+    assert rr.kind == "reply" and "TT-8" in rr.reply
+    rr2 = router.route(_msg("确认"))
+    assert rr2.kind == "execute"
+    assert rr2.plan.fight.stage == "TT-8"
+    assert rr2.plan.recruit.enable is True
+
+
+def test_fresh_patch_or_approve_degrades_to_clarify(tmp_path):
+    router = Router(_cfg(tmp_path), FakeLLM(json.dumps({"action": "approve"})), PROMPT, SCHEMA)
+    rr = router.route(_msg("可以"))
+    assert rr.kind == "reply" and "当前没有待确认" in rr.reply
+
+    router2 = Router(
+        _cfg(tmp_path),
+        FakeLLM(json.dumps({"action": "patch", "patch": {"fight": {"stage": "CE-6"}}})),
+        PROMPT,
+        SCHEMA,
+    )
+    rr2 = router2.route(_msg("换成 CE-6"))
+    assert rr2.kind == "reply" and "当前没有待确认" in rr2.reply
+
+
+def test_advise_is_reply_only_and_rendered_from_snapshot(tmp_path):
+    stages = [StageInfo("测试当期", "TT-8", "本关效率最高", "x")]
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    router = Router(
+        cfg,
+        FakeLLM(json.dumps({"action": "advise", "advise_refs": ["TT-8"]})),
+        PROMPT,
+        SCHEMA,
+        stage_loader=lambda path, client, now=None: stages,
+    )
+    rr = router.route(_msg("当前活动能刷什么"))
+    assert rr.kind == "reply"
+    assert "TT-8" in rr.reply and "本关效率最高" in rr.reply
 
 
 def test_confirm_mode_spend_only_executes_daily_directly(tmp_path):
@@ -106,6 +249,40 @@ def test_llm_path_specific_stage(tmp_path):
     assert rr.plan.fight.stage == "CE-6" and rr.plan.fight.times == 3
     assert rr.plan.recruit.enable is False
     assert rr.plan.startup is True
+
+
+def test_llm_path_accepts_fight_series(tmp_path):
+    llm = FakeLLM(
+        json.dumps(
+            {
+                "action": "run",
+                "fight": {"enable": True, "stage": "CE-6", "series": 6},
+            }
+        )
+    )
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    router = Router(cfg, llm, PROMPT, SCHEMA)
+    rr = router.route(_msg("刷 CE-6，固定六倍代理"))
+    assert rr.kind == "execute"
+    assert rr.plan.fight.series == 6
+
+
+def test_llm_path_canonicalizes_alias_stage_output(tmp_path):
+    llm = FakeLLM(
+        json.dumps(
+            {
+                "action": "run",
+                "fight": {"enable": True, "stage": "ce6"},
+            }
+        )
+    )
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    router = Router(cfg, llm, PROMPT, SCHEMA)
+    rr = router.route(_msg("刷钱本"))
+    assert rr.kind == "execute"
+    assert rr.plan.fight.stage == "CE-6"
 
 
 def test_reject_and_clarify_are_reply_only(tmp_path):
@@ -200,7 +377,7 @@ def test_stone_requires_confirmation_then_confirm_executes(tmp_path):
     assert rr2.kind == "execute" and rr2.plan.fight.stone == 50
 
 
-def test_confirmation_has_priority_over_pending_selection(tmp_path):
+def test_pending_selection_has_priority_over_pending_confirm(tmp_path):
     stages = [StageInfo("测试当期", "TT-8", "本关效率最高", "x")]
     llm = FakeLLM(json.dumps({"action": "ask_stage_selection"}))
     cfg = _cfg(tmp_path)
@@ -214,8 +391,9 @@ def test_confirmation_has_priority_over_pending_selection(tmp_path):
     )
     router.route(_msg("刷活动"))
     router._pending_confirm["oc_1"] = (TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks), 300.0)
-    rr = router.route(_msg("确认"))
-    assert rr.kind == "execute"
+    rr = router.route(_msg("1"))
+    assert rr.kind == "reply"
+    assert "TT-8" in rr.reply
 
 
 def test_stone_confirmation_cancel(tmp_path):
@@ -298,6 +476,54 @@ def test_schema_violation_then_retry_success(tmp_path):
     router = Router(cfg, FlakyLLM(), PROMPT, SCHEMA)
     rr = router.route(_msg("刷理智"))
     assert rr.kind == "execute"
+
+
+def test_schema_violation_missing_patch_payload_then_retry_success(tmp_path):
+    llm = QueueLLM(
+        [
+            json.dumps({"action": "patch"}),
+            json.dumps({"action": "patch", "patch": {"fight": {"stage": "CE-6"}}}),
+        ]
+    )
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("跑日常")).kind == "reply"
+    rr = router.route(_msg("换成 CE-6"))
+    assert rr.kind == "reply" and "CE-6" in rr.reply
+    assert len(llm.calls) == 2
+
+
+def test_confirm_mode_run_output_then_retry_patch_success(tmp_path):
+    llm = QueueLLM(
+        [
+            json.dumps({"action": "run", "fight": {"enable": True, "stage": "CE-6"}}),
+            json.dumps({"action": "patch", "patch": {"fight": {"stage": "CE-6"}}}),
+        ]
+    )
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    assert router.route(_msg("跑日常")).kind == "reply"
+    rr = router.route(_msg("换成 CE-6"))
+    assert rr.kind == "reply" and "CE-6" in rr.reply
+    assert len(llm.calls) == 2
+
+
+def test_validator_violation_then_retry_success(tmp_path):
+    llm = QueueLLM(
+        [
+            json.dumps({"action": "run", "fight": {"enable": True, "stage": "SN-10"}}),
+            json.dumps({"action": "ask_stage_selection"}),
+        ]
+    )
+    stages = [StageInfo("测试当期", "TT-8", "本关效率最高", "x")]
+    router = Router(
+        _cfg(tmp_path),
+        llm,
+        PROMPT,
+        SCHEMA,
+        stage_loader=lambda path, client, now=None: stages,
+    )
+    rr = router.route(_msg("刷当前活动代币"))
+    assert rr.kind == "reply" and "TT-8" in rr.reply
+    assert len(llm.calls) == 2
 
 
 def test_invalid_json_exhausts_retries_to_clarify(tmp_path):

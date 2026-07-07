@@ -15,6 +15,13 @@ from jsonschema import ValidationError, validate
 
 from maa_remote.config import load_config
 from maa_remote.llm import LLMClient, LLMError
+from maa_remote.planner_snapshot import (
+    PlannerValidationError,
+    build_planner_snapshot,
+    build_user_prompt,
+    validate_planner_output,
+)
+from maa_remote.stage_catalog import load_open_stages
 
 
 def subset_match(expected: Any, actual: Any) -> bool:
@@ -30,9 +37,18 @@ def subset_match(expected: Any, actual: Any) -> bool:
     return expected == actual
 
 
-def run_case(llm, system_prompt: str, schema: dict, case: dict) -> tuple[bool, str]:
+def run_case(
+    llm,
+    system_prompt: str,
+    schema: dict,
+    case: dict,
+    cfg,
+    stage_loader=load_open_stages,
+) -> tuple[bool, str]:
+    snapshot = build_planner_snapshot(cfg, stage_loader)
+    user_prompt = build_user_prompt(case["input"], snapshot)
     try:
-        raw = llm.chat(system_prompt, case["input"], json_mode=True)
+        raw = llm.chat(system_prompt, user_prompt, json_mode=True)
     except LLMError as exc:
         return False, f"LLM 调用失败: {exc}"
     except Exception as exc:
@@ -47,6 +63,11 @@ def run_case(llm, system_prompt: str, schema: dict, case: dict) -> tuple[bool, s
         validate(actual, schema)
     except ValidationError as exc:
         return False, f"schema 不过: {exc.message}"
+
+    try:
+        validate_planner_output(actual, snapshot, case["input"], mode="fresh")
+    except PlannerValidationError as exc:
+        return False, f"planner validator 不过: {exc}"
 
     if not subset_match(case["expected"], actual):
         return False, f"字段不匹配，实际: {json.dumps(actual, ensure_ascii=False)}"
@@ -74,7 +95,7 @@ def main(argv=None) -> int:
 
     passed = 0
     for index, case in enumerate(cases, 1):
-        ok, why = run_case(llm, system_prompt, schema, case)
+        ok, why = run_case(llm, system_prompt, schema, case, cfg)
         if ok:
             passed += 1
         mark = "PASS" if ok else "FAIL"

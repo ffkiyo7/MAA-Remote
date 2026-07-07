@@ -76,6 +76,7 @@ def test_load_config_expands_env_and_reads_key(tmp_path):
     assert cfg.maa.task_timeout_s == 3600
     assert cfg.llm.api_key == "sk-xyz"
     assert cfg.maa.fight.expiring_medicine is True
+    assert cfg.maa.fight.series == 0
     assert cfg.emulator.adb_serial == "127.0.0.1:16384"
     assert cfg.maa.daily_tasks == ["startup", "recruit", "fight"]
     assert cfg.runtime.max_msg_age_s == 300
@@ -136,6 +137,12 @@ def test_asst_log_path_defaults_empty_and_expands(tmp_path):
     open(path, "w", encoding="utf-8").write(body)
     cfg2 = load_config(path, env=_ENV)
     assert cfg2.maa.asst_log_path == "y/loong/maa/debug/asst.log"
+
+
+def test_fight_series_overrides_auto_default(tmp_path):
+    body = _MINIMAL.replace("[emulator]", "series = 6\n[emulator]", 1)
+    cfg = load_config(_write(tmp_path, body), env={"DEEPSEEK_API_KEY": "k"})
+    assert cfg.maa.fight.series == 6
 
 
 def test_progress_and_confirm_sections_override(tmp_path):

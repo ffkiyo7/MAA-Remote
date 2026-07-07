@@ -87,7 +87,7 @@ def test_build_task_file_daily_includes_toggled_tasks():
         infrast=Toggle(True),
         mall=Toggle(True),
         award=Toggle(True),
-        fight=Fight(enable=True, stage="", expiring_medicine=True, medicine=0, stone=0),
+        fight=Fight(enable=True, stage="", expiring_medicine=True, medicine=0, stone=0, series=0),
     )
     task_file = build_task_file(plan, "Official")
     types = [task["type"] for task in task_file["tasks"]]
@@ -98,6 +98,7 @@ def test_build_task_file_daily_includes_toggled_tasks():
     assert fight["params"]["stage"] == ""
     assert fight["params"]["expiring_medicine"] == 999
     assert fight["params"]["medicine"] == 0 and fight["params"]["stone"] == 0
+    assert fight["params"]["series"] == 0
 
 
 def test_build_task_file_omits_disabled():
@@ -130,6 +131,20 @@ def test_build_task_file_explicit_medicine_and_stone():
     task_file = build_task_file(plan, "Official")
     assert task_file["tasks"][0]["params"]["medicine"] == 999
     assert task_file["tasks"][0]["params"]["stone"] == 50
+
+
+def test_build_task_file_allows_fixed_series():
+    plan = TaskPlan(
+        action="run",
+        startup=False,
+        recruit=Recruit(enable=False),
+        infrast=Toggle(False),
+        mall=Toggle(False),
+        award=Toggle(False),
+        fight=Fight(enable=True, stage="CE-6", series=6),
+    )
+    task_file = build_task_file(plan, "Official")
+    assert task_file["tasks"][0]["params"]["series"] == 6
 
 
 def test_ensure_emulator_splits_quoted_spaced_path(tmp_path):

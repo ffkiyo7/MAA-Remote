@@ -37,6 +37,7 @@ stage             = ""
 expiring_medicine = true
 medicine          = 0
 stone             = 0
+series            = 0   # 0=MAA 自动选择当前理智可用的最大代理倍率；1~6=固定倍率；-1=禁用切换
 
 [emulator]
 kind           = "mumu"                       # mumu/leidian/bluestacks

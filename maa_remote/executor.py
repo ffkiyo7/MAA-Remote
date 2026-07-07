@@ -92,6 +92,8 @@ def build_task_file(plan: TaskPlan, client: str) -> dict:
         }
         if plan.fight.times is not None:
             fight_params["times"] = plan.fight.times
+        if plan.fight.series is not None:
+            fight_params["series"] = plan.fight.series
         tasks.append({"type": "Fight", "params": fight_params})
     return {"tasks": tasks}
 
