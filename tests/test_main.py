@@ -1,7 +1,7 @@
 import threading
 import shutil
 
-from maa_remote.__main__ import _parse_auth_status_output, handle_message, setup_logging
+from maa_remote.__main__ import RuntimeState, _parse_auth_status_output, handle_message, setup_logging
 from maa_remote.config import load_config
 from maa_remote.models import ExecResult, Fight, Msg, RouteResult, TaskPlan
 
@@ -20,6 +20,11 @@ class FakeRouter:
 
     def route(self, msg):
         return self.rr
+
+
+class RaisingRouter:
+    def route(self, msg):
+        raise AssertionError("router should not be called")
 
 
 class OKLLM:
@@ -213,6 +218,102 @@ def test_busy_when_lock_held(tmp_path):
     lock.release()
 
 
+def test_running_stop_request_requires_confirmation(tmp_path):
+    cfg = _cfg(tmp_path)
+    sent = []
+    state = RuntimeState()
+    cancel_event = threading.Event()
+    state.start_task(cancel_event)
+    handle_message(
+        Msg("停下来！", "oc_1", "om_1", "ou_1", 0),
+        RaisingRouter(),
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=_runner_recording(sent),
+        runtime_state=state,
+    )
+    joined = " ".join(" ".join(cmd) for cmd in sent)
+    assert "确定要停止本次 MAA 任务吗" in joined
+    assert cancel_event.is_set() is False
+
+
+def test_running_stop_confirm_sets_cancel_event(tmp_path):
+    cfg = _cfg(tmp_path)
+    sent = []
+    state = RuntimeState()
+    cancel_event = threading.Event()
+    state.start_task(cancel_event)
+    state.request_stop_confirm()
+    handle_message(
+        Msg("确认", "oc_1", "om_1", "ou_1", 0),
+        RaisingRouter(),
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=_runner_recording(sent),
+        runtime_state=state,
+    )
+    joined = " ".join(" ".join(cmd) for cmd in sent)
+    assert "正在停止当前 MAA 任务" in joined
+    assert cancel_event.is_set() is True
+
+
+def test_running_stop_cancel_keeps_task(tmp_path):
+    cfg = _cfg(tmp_path)
+    sent = []
+    state = RuntimeState()
+    cancel_event = threading.Event()
+    state.start_task(cancel_event)
+    state.request_stop_confirm()
+    handle_message(
+        Msg("取消", "oc_1", "om_1", "ou_1", 0),
+        RaisingRouter(),
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=_runner_recording(sent),
+        runtime_state=state,
+    )
+    joined = " ".join(" ".join(cmd) for cmd in sent)
+    assert "继续执行当前任务" in joined
+    assert cancel_event.is_set() is False
+
+
+def test_emulator_status_query_bypasses_router(tmp_path):
+    cfg = _cfg(tmp_path)
+    sent = []
+
+    def runner(cmd, **kw):
+        sent.append(cmd)
+
+        class R:
+            returncode = 0
+            stdout = "device\n" if cmd[-1] == "get-state" else "{}"
+            stderr = ""
+
+        return R()
+
+    handle_message(
+        Msg("模拟器开着吗？", "oc_1", "om_1", "ou_1", 0),
+        RaisingRouter(),
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=runner,
+    )
+    joined = " ".join(" ".join(cmd) for cmd in sent)
+    assert "模拟器已开启" in joined
+
+
 def test_worker_exception_replies_error_and_releases_lock(tmp_path):
     cfg = _cfg(tmp_path)
     sent = []
@@ -239,3 +340,62 @@ def test_worker_exception_replies_error_and_releases_lock(tmp_path):
     lock.release()
     joined = " ".join(" ".join(cmd) for cmd in sent)
     assert "执行崩了" in joined
+
+
+def test_successful_task_sets_service_stop_event(tmp_path):
+    cfg = _cfg(tmp_path)
+    plan = TaskPlan(action="run", fight=Fight(enable=True))
+    router = FakeRouter(RouteResult(kind="execute", reply=cfg.runtime.ack_reply, plan=plan))
+    service_stop = threading.Event()
+
+    def fake_exec(plan, cfg, task_dir, **kw):
+        return ExecResult(ok=True, exit_code=0, raw_log="", facts={}, error=None)
+
+    handle_message(
+        _msg(),
+        router,
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=_runner_recording([]),
+        execute_fn=fake_exec,
+        thread_factory=ImmediateThread,
+        runtime_state=RuntimeState(),
+        service_stop_event=service_stop,
+    )
+    assert service_stop.is_set() is True
+
+
+def test_cancelled_task_does_not_set_service_stop_event(tmp_path):
+    cfg = _cfg(tmp_path)
+    plan = TaskPlan(action="run", fight=Fight(enable=True))
+    router = FakeRouter(RouteResult(kind="execute", reply=cfg.runtime.ack_reply, plan=plan))
+    service_stop = threading.Event()
+
+    def fake_exec(plan, cfg, task_dir, **kw):
+        return ExecResult(
+            ok=False,
+            exit_code=-1,
+            raw_log="",
+            facts={},
+            error="用户已停止本次 MAA 任务",
+            cancelled=True,
+        )
+
+    handle_message(
+        _msg(),
+        router,
+        cfg,
+        threading.Lock(),
+        OKLLM(),
+        "bot",
+        str(tmp_path / "tasks"),
+        runner=_runner_recording([]),
+        execute_fn=fake_exec,
+        thread_factory=ImmediateThread,
+        runtime_state=RuntimeState(),
+        service_stop_event=service_stop,
+    )
+    assert service_stop.is_set() is False

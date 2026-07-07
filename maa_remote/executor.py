@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import queue
 import re
 import shlex
 import subprocess
@@ -20,6 +21,20 @@ log = logging.getLogger("maa_remote.executor")
 
 class EmulatorError(Exception):
     pass
+
+
+class EmulatorNotReadyError(Exception):
+    pass
+
+
+class EmulatorStatus:
+    def __init__(self, state: str, detail: str = ""):
+        self.state = state
+        self.detail = detail
+
+    @property
+    def is_running(self) -> bool:
+        return self.state == "running"
 
 
 _EXPIRING_MEDICINE_ALL = 999
@@ -132,6 +147,36 @@ def ensure_emulator(
     raise EmulatorError(f"模拟器/adb 在 {emulator.boot_timeout_s}s 内未就绪（{emulator.adb_serial}）")
 
 
+def emulator_status(cfg: Config, runner=run_utf8) -> EmulatorStatus:
+    emulator = cfg.emulator
+    try:
+        runner([emulator.adb_path, "connect", emulator.adb_serial], timeout=15)
+        state = runner(
+            [emulator.adb_path, "-s", emulator.adb_serial, "get-state"],
+            timeout=15,
+        )
+    except Exception as exc:
+        return EmulatorStatus("unknown", str(exc))
+
+    raw = (getattr(state, "stdout", "") or "").strip()
+    if raw == "device":
+        return EmulatorStatus("running", raw)
+    if raw in {"offline", "unknown", "unauthorized"}:
+        return EmulatorStatus("offline", raw)
+    return EmulatorStatus("unknown", raw)
+
+
+def ensure_emulator_running(cfg: Config, runner=run_utf8) -> None:
+    status = emulator_status(cfg, runner=runner)
+    if not status.is_running:
+        detail = f": {status.detail}" if status.detail else ""
+        raise EmulatorNotReadyError(f"模拟器未就绪（{status.state}{detail}）")
+
+
+def shutdown_emulator(cfg: Config, runner=run_utf8) -> None:
+    runner(shlex.split(cfg.emulator.shutdown_cmd), timeout=60)
+
+
 def parse_maa_log(text: str) -> dict:
     facts: dict = {}
     lines = [line for line in text.splitlines() if line.strip()]
@@ -216,6 +261,7 @@ def run_maa(
     task_dir: str,
     popen=subprocess.Popen,
     on_event=None,
+    cancel_event: threading.Event | None = None,
 ) -> ExecResult:
     os.makedirs(task_dir, exist_ok=True)
     name = f"maa_remote_{uuid.uuid4().hex[:8]}"
@@ -249,6 +295,7 @@ def run_maa(
         return ExecResult(ok=False, exit_code=-1, raw_log="", facts={}, error=f"maa 启动失败: {exc}")
 
     timed_out = threading.Event()
+    cancelled = threading.Event()
 
     def _kill() -> None:
         timed_out.set()
@@ -272,8 +319,52 @@ def run_maa(
         except Exception:
             log.exception("进度回调失败(忽略)")
 
+    def _stop_proc() -> None:
+        try:
+            proc.terminate()
+        except AttributeError:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            return
+        except Exception:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            return
+
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+
+    def _reader(out_queue: queue.Queue[str | None]) -> None:
+        try:
+            for line in proc.stdout or []:
+                out_queue.put(line)
+        finally:
+            out_queue.put(None)
+
     def _pump() -> None:
-        for line in proc.stdout or []:
+        out_queue: queue.Queue[str | None] = queue.Queue()
+        reader = threading.Thread(target=_reader, args=(out_queue,), daemon=True)
+        reader.start()
+        while True:
+            if cancel_event is not None and cancel_event.is_set():
+                cancelled.set()
+                _stop_proc()
+                break
+            try:
+                line = out_queue.get(timeout=0.2)
+            except queue.Empty:
+                continue
+            if line is None:
+                break
             lines.append(line.rstrip("\n"))
             if on_event is not None and not use_tailer:
                 event = parse_progress_line(line)
@@ -296,6 +387,15 @@ def run_maa(
 
     raw_log = "\n".join(lines)
     facts = parse_maa_log(raw_log)
+    if cancelled.is_set():
+        return ExecResult(
+            ok=False,
+            exit_code=-1,
+            raw_log=raw_log,
+            facts=facts,
+            error="用户已停止本次 MAA 任务",
+            cancelled=True,
+        )
     if timed_out.is_set():
         return ExecResult(
             ok=False,
@@ -324,19 +424,23 @@ def execute(
     monotonic=time.monotonic,
     on_event=None,
     popen=subprocess.Popen,
+    cancel_event: threading.Event | None = None,
+    ensure_ready: bool = True,
 ) -> ExecResult:
-    try:
-        ensure_emulator(
-            cfg,
-            runner=runner,
-            sleep=sleep,
-            monotonic=monotonic,
-            on_event=on_event,
-        )
-    except EmulatorError as exc:
-        return ExecResult(ok=False, exit_code=-1, raw_log="", facts={}, error=str(exc))
+    if ensure_ready:
+        try:
+            ensure_emulator_running(cfg, runner=runner)
+        except EmulatorNotReadyError as exc:
+            return ExecResult(ok=False, exit_code=-1, raw_log="", facts={}, error=str(exc))
 
-    result = run_maa(plan, cfg, task_dir, popen=popen, on_event=on_event)
-    if cfg.emulator.close_after:
-        runner(shlex.split(cfg.emulator.shutdown_cmd), timeout=60)
+    result = run_maa(
+        plan,
+        cfg,
+        task_dir,
+        popen=popen,
+        on_event=on_event,
+        cancel_event=cancel_event,
+    )
+    if cfg.emulator.close_after and not result.cancelled:
+        shutdown_emulator(cfg, runner=runner)
     return result

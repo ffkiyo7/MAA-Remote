@@ -114,6 +114,7 @@ class ExecResult:
     raw_log: str
     facts: dict[str, Any]
     error: str | None = None
+    cancelled: bool = False
 
 
 @dataclass

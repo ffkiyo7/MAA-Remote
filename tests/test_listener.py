@@ -1,6 +1,8 @@
 import json
 import logging
 import shutil
+import threading
+import time
 
 from maa_remote.config import load_config
 from maa_remote.listener import listen, parse_event
@@ -204,3 +206,41 @@ def test_listen_builds_lark_cli_command(tmp_path):
     assert "--format" not in captured["cmd"]
     assert captured["encoding"] == "utf-8"
     assert captured["errors"] == "replace"
+
+
+def test_listen_exits_when_stop_event_already_set(tmp_path):
+    cfg = _cfg(tmp_path)
+    stop_event = threading.Event()
+    stop_event.set()
+    gen = listen(cfg, "ou_1", stop_event=stop_event, sleep=lambda s: None)
+    try:
+        next(gen)
+    except StopIteration:
+        pass
+    else:
+        raise AssertionError("listener should stop before spawning")
+
+
+def test_listen_terminates_subprocess_when_stop_event_set(tmp_path):
+    cfg = _cfg(tmp_path)
+    stop_event = threading.Event()
+
+    class FakeProc:
+        def __init__(self):
+            self.stdout = iter([])
+            self.terminated = False
+
+        def terminate(self):
+            self.terminated = True
+
+    proc = FakeProc()
+
+    def spawn(cmd, **kw):
+        stop_event.set()
+        return proc
+
+    list(listen(cfg, "ou_1", stop_event=stop_event, spawn=spawn, sleep=lambda s: None))
+    deadline = time.monotonic() + 1
+    while not proc.terminated and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert proc.terminated is True

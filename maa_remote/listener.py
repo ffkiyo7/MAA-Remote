@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import subprocess
+import threading
 import time
 from collections.abc import Iterator
 
@@ -105,6 +106,7 @@ def listen(
     cfg: Config,
     allowed_sender: str,
     max_age_s: int = 0,
+    stop_event: threading.Event | None = None,
     spawn=subprocess.Popen,
     sleep=time.sleep,
 ) -> Iterator[Msg]:
@@ -121,7 +123,7 @@ def listen(
     ]
     backoff_s = 1
 
-    while True:
+    while stop_event is None or not stop_event.is_set():
         try:
             proc = spawn(
                 cmd,
@@ -131,7 +133,15 @@ def listen(
                 errors="replace",
                 env=lark_subprocess_env(),
             )
+            if stop_event is not None:
+                threading.Thread(
+                    target=_terminate_on_stop,
+                    args=(proc, stop_event),
+                    daemon=True,
+                ).start()
             for raw_line in proc.stdout:
+                if stop_event is not None and stop_event.is_set():
+                    break
                 line = raw_line.strip()
                 if not line:
                     continue
@@ -149,6 +159,21 @@ def listen(
         except Exception:
             log.exception("listener 子进程异常")
 
+        if stop_event is not None and stop_event.is_set():
+            break
         log.warning("lark-cli event consume 退出，%s 秒后重启", backoff_s)
         sleep(backoff_s)
         backoff_s = min(backoff_s * 2, 60)
+
+
+def _terminate_on_stop(proc, stop_event: threading.Event) -> None:
+    stop_event.wait()
+    try:
+        proc.terminate()
+    except AttributeError:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+    except Exception:
+        pass

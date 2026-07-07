@@ -1,5 +1,6 @@
 import json
 import os
+import threading
 import textwrap
 
 import pytest
@@ -10,6 +11,7 @@ from maa_remote.executor import (
     EmulatorError,
     build_task_file,
     ensure_emulator,
+    emulator_status,
     execute,
     parse_maa_log,
     run_maa,
@@ -194,6 +196,24 @@ def test_ensure_emulator_timeout(tmp_path):
         ensure_emulator(cfg, runner=lambda cmd, **kw: R("offline\n"), sleep=lambda s: None, monotonic=mono)
 
 
+def test_emulator_status_reports_running_offline_and_unknown(tmp_path):
+    cfg = _cfg(tmp_path)
+
+    def running(cmd, **kw):
+        return R("device\n") if cmd[-1] == "get-state" else R()
+
+    def offline(cmd, **kw):
+        return R("offline\n") if cmd[-1] == "get-state" else R()
+
+    def boom(cmd, **kw):
+        raise OSError("adb missing")
+
+    assert emulator_status(cfg, runner=running).state == "running"
+    assert emulator_status(cfg, runner=offline).state == "offline"
+    unknown = emulator_status(cfg, runner=boom)
+    assert unknown.state == "unknown" and "adb missing" in unknown.detail
+
+
 def test_parse_maa_log_extracts_summary_section():
     log = "噪音行\n[INFO] Summary\nFight TT-8 3 times\n公招识别 4 次\n"
     facts = parse_maa_log(log)
@@ -294,6 +314,25 @@ def test_run_maa_timeout_kills_and_reports(tmp_path):
     assert popen.killed is True
 
 
+def test_run_maa_cancel_event_terminates_and_reports_cancelled(tmp_path):
+    cfg = _cfg(tmp_path)
+    plan = TaskPlan.daily(cfg.maa.fight, cfg.maa.daily_tasks)
+    cancel_event = threading.Event()
+    cancel_event.set()
+    popen = FakePopen(["line"] * 10)
+    res = run_maa(
+        plan,
+        cfg,
+        str(tmp_path / "tasks"),
+        popen=popen,
+        cancel_event=cancel_event,
+    )
+    assert res.ok is False
+    assert res.cancelled is True
+    assert "用户已停止" in res.error
+    assert popen.terminated is True
+
+
 def test_execute_emulator_failure_short_circuits(tmp_path):
     cfg = _cfg(tmp_path)
     plan = TaskPlan(action="run", fight=Fight(enable=True))
@@ -338,6 +377,32 @@ def test_execute_closes_emulator_when_configured(tmp_path):
     )
     assert res.ok is True
     assert calls[-1] == ["C:/Program Files/Mu Mu/MuMuManager.exe", "control", "-v", "0", "shutdown"]
+
+
+def test_execute_cancel_does_not_close_emulator(tmp_path):
+    cfg = _cfg(tmp_path)
+    cfg.emulator.close_after = True
+    plan = TaskPlan(action="run", fight=Fight(enable=True))
+    calls = []
+    cancel_event = threading.Event()
+    cancel_event.set()
+
+    def runner(cmd, **kw):
+        calls.append(cmd)
+        if cmd[-1] == "get-state":
+            return R("device\n")
+        return R()
+
+    res = execute(
+        plan,
+        cfg,
+        str(tmp_path / "tasks"),
+        runner=runner,
+        popen=FakePopen(["line"]),
+        cancel_event=cancel_event,
+    )
+    assert res.cancelled is True
+    assert ["C:/Program Files/Mu Mu/MuMuManager.exe", "control", "-v", "0", "shutdown"] not in calls
 
 
 def test_ensure_emulator_emits_progress_events(tmp_path):

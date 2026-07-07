@@ -6,6 +6,7 @@ class FakePopen:
         self._returncode = returncode
         self._boom = boom
         self.killed = False
+        self.terminated = False
         self.cmd = None
         self.kw = None
 
@@ -29,3 +30,6 @@ class FakePopen:
 
     def kill(self):
         self.killed = True
+
+    def terminate(self):
+        self.terminated = True
