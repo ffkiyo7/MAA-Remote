@@ -1,0 +1,277 @@
+[
+  {
+    "id": 96597,
+    "uploader": "二狗子1223",
+    "views": 20,
+    "hot_score": 5.462435359761025,
+    "rating_level": 0,
+    "rating_ratio": 0.0,
+    "content": {
+      "stage_name": "",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "涤墨作战200挂机",
+        "details": "涤墨作战200挂机"
+      },
+      "opers": [
+        {
+          "name": "维什戴尔",
+          "skill": 3,
+          "skill_usage": 1
+        },
+        {
+          "name": "可露希尔",
+          "skill": 1,
+          "skill_usage": 0
+        }
+      ],
+      "groups": []
+    }
+  },
+  {
+    "id": 89036,
+    "uploader": "otherwise",
+    "views": 1094,
+    "hot_score": 5.3346827295426085,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "stage_name": "act22side_ex02",
+      "minimum_required": "v4.0.0",
+      "doc": {
+        "title": "照我以火 - FC-EX-2 - 夜间巡逻",
+        "details": "照我以火 - FC-EX-2 - 夜间巡逻"
+      },
+      "opers": [
+        {
+          "name": "凛御银灰",
+          "skill": 3,
+          "skill_usage": 1,
+          "requirements": {
+            "skill_level": 10
+          }
+        },
+        {
+          "name": "圣聆初雪",
+          "skill": 2,
+          "requirements": {
+            "skill_level": 10
+          }
+        },
+        {
+          "name": "塞雷娅",
+          "skill": 1,
+          "requirements": {
+            "skill_level": 10
+          }
+        }
+      ],
+      "groups": [
+        {
+          "name": "工具人",
+          "opers": [
+            {
+              "name": "CONFESS-47"
+            },
+            {
+              "name": "Lancet-2"
+            },
+            {
+              "name": "PhonoR-0"
+            },
+            {
+              "name": "THRM-EX"
+            },
+            {
+              "name": "U-Official"
+            },
+            {
+              "name": "孑",
+              "requirements": {
+                "elite": 0,
+                "level": 1
+              }
+            }
+          ]
+        }
+      ],
+      "version": 3,
+      "difficulty": 3
+    }
+  },
+  {
+    "id": 31272,
+    "uploader": "小卡拉帕鲁灰",
+    "views": 3003,
+    "hot_score": 4.964480072578277,
+    "rating_level": 9,
+    "rating_ratio": 0.9,
+    "content": {
+      "stage_name": "act22side_ex02",
+      "minimum_required": "v4.0.0",
+      "doc": {
+        "title": "照我以火 - FC-EX-2 - 夜间巡逻 - 令单 ",
+        "details": "作业作者：灰bao_\nJSON作者：灰bao_\n这关突袭用了较多子弹时间，子弹时间期间请勿动屏幕\n令：精二90级专3、三级模组\nhttps://www.bilibili.com/video/BV1Rw411V7rR/?spm_id_from=333.1365.list.card_archive.click"
+      },
+      "opers": [
+        {
+          "name": "令",
+          "skill": 3,
+          "skill_usage": 0,
+          "requirements": {
+            "elite": 2,
+            "level": 90,
+            "module": 2
+          }
+        },
+        {
+          "name": "夜刀"
+        }
+      ],
+      "groups": [],
+      "version": 3,
+      "difficulty": 3
+    }
+  },
+  {
+    "id": 91063,
+    "uploader": "神秘逗猫男",
+    "views": 180,
+    "hot_score": 2.8918560839815717,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "stage_name": "act22side_ex02",
+      "minimum_required": "v6.0.0",
+      "doc": {
+        "title": "照我以火 - FC-EX-2 - 夜间巡逻",
+        "details": "【突袭FC-EX-2四步摆完挂机】 https://www.bilibili.com/video/BV1rwqYBDEWk/?share_source=copy_web&vd_source=c535d66b4d4f9ee364e635418080ff6c"
+      },
+      "opers": [
+        {
+          "name": "凛御银灰",
+          "skill": 3,
+          "skill_usage": 1,
+          "requirements": {
+            "skill_level": 10
+          }
+        },
+        {
+          "name": "圣聆初雪",
+          "skill": 2,
+          "requirements": {
+            "skill_level": 10,
+            "module": 2
+          }
+        },
+        {
+          "name": "塞雷娅",
+          "skill_usage": 1
+        },
+        {
+          "name": "砾"
+        }
+      ],
+      "groups": [],
+      "version": 3,
+      "difficulty": 3
+    }
+  },
+  {
+    "id": 52492,
+    "uploader": "渔鱼御雨",
+    "views": 1061,
+    "hot_score": 2.008096158004875,
+    "rating_level": 10,
+    "rating_ratio": 1.0,
+    "content": {
+      "minimum_required": "v4.0.0",
+      "stage_name": "act22side_ex02",
+      "doc": {
+        "title": "照我以火 - FC-EX-2 - 夜间巡逻",
+        "details": "原作者萧然Q JSON作者萨拉托加\n作业交流群545928846，如果作业有问题可以加群找我，评论区不能及时回复，还可以去群里蹲我的新作业\n【【照我以火】FC-EX1至8突袭 摆完挂机 简单好抄】 https://www.bilibili.com/video/BV1914y1A7sn/?p=2&share_source=copy_web&vd_source=3fd5040fe25f6a00e19e6072bcccfa4e"
+      },
+      "groups": [
+        {
+          "name": "奶",
+          "opers": [
+            {
+              "name": "纯烬艾雅法拉",
+              "skill": 1,
+              "skill_usage": 0
+            },
+            {
+              "name": "流明",
+              "skill": 3,
+              "skill_usage": 1
+            },
+            {
+              "name": "闪灵",
+              "skill": 2,
+              "skill_usage": 0
+            }
+          ]
+        },
+        {
+          "name": "德克萨斯",
+          "opers": [
+            {
+              "name": "德克萨斯",
+              "skill": 1,
+              "skill_usage": 0
+            },
+            {
+              "name": "伊内丝",
+              "skill": 2,
+              "skill_usage": 1
+            }
+          ]
+        },
+        {
+          "name": "艾雅法拉",
+          "opers": [
+            {
+              "name": "逻各斯",
+              "skill": 1,
+              "skill_usage": 0
+            },
+            {
+              "name": "艾雅法拉",
+              "skill": 2,
+              "skill_usage": 0
+            }
+          ]
+        },
+        {
+          "name": "煌",
+          "opers": [
+            {
+              "name": "乌尔比安",
+              "skill": 2,
+              "skill_usage": 0
+            },
+            {
+              "name": "煌",
+              "skill": 2,
+              "skill_usage": 0
+            },
+            {
+              "name": "重岳",
+              "skill": 3,
+              "skill_usage": 2,
+              "skill_times": 5
+            }
+          ]
+        }
+      ],
+      "opers": [
+        {
+          "name": "能天使",
+          "skill": 3,
+          "skill_usage": 0
+        }
+      ],
+      "difficulty": 0
+    }
+  }
+]
