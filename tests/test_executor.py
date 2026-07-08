@@ -16,7 +16,7 @@ from maa_remote.executor import (
     parse_maa_log,
     run_maa,
 )
-from maa_remote.models import Fight, Recruit, TaskPlan, Toggle
+from maa_remote.models import CopilotJob, Fight, Recruit, TaskPlan, Toggle
 
 
 _CONFIG = textwrap.dedent(
@@ -118,6 +118,66 @@ def test_build_task_file_omits_disabled():
     assert types == ["Fight"]
     assert task_file["tasks"][0]["params"]["stage"] == "TT-8"
     assert task_file["tasks"][0]["params"]["times"] == 3
+
+
+def test_build_task_file_copilot_single_job_filename_mode():
+    plan = TaskPlan.for_copilot(
+        [CopilotJob(filename="D:/jobs/1001.json", stage_name="obt/main/level_main_01-07", job_id=1001)],
+        formation_index=2,
+    )
+    task_file = build_task_file(plan, "Official")
+    types = [t["type"] for t in task_file["tasks"]]
+    # Nav 是 pre-S2 空 seam → StartUp 后直接 Copilot；日常子任务全不出现。
+    assert types == ["StartUp", "Copilot"]
+    params = task_file["tasks"][-1]["params"]
+    assert params["filename"] == "D:/jobs/1001.json"
+    assert "copilot_list" not in params
+    assert params["formation"] is True
+    assert params["formation_index"] == 2
+    assert params["use_sanity_potion"] is False
+
+
+def test_build_task_file_copilot_multi_job_uses_copilot_list():
+    plan = TaskPlan.for_copilot([
+        CopilotJob(filename="D:/jobs/1.json", stage_name="s1", job_id=1),
+        CopilotJob(filename="D:/jobs/2.json", stage_name="s2", job_id=2),
+    ])
+    params = build_task_file(plan, "Official")["tasks"][-1]["params"]
+    assert "filename" not in params
+    assert params["copilot_list"] == [
+        {"filename": "D:/jobs/1.json", "stage_name": "s1", "is_raid": False},
+        {"filename": "D:/jobs/2.json", "stage_name": "s2", "is_raid": False},
+    ]
+
+
+def test_build_task_file_copilot_single_raid_uses_copilot_list():
+    # 单 job 但突袭 → 走 copilot_list（filename 模式不带 is_raid）。
+    plan = TaskPlan.for_copilot(
+        [CopilotJob(filename="D:/jobs/9.json", stage_name="s9", job_id=9, is_raid=True)]
+    )
+    params = build_task_file(plan, "Official")["tasks"][-1]["params"]
+    assert "filename" not in params
+    assert params["copilot_list"][0]["is_raid"] is True
+
+
+def test_build_task_file_copilot_emits_no_daily_tasks():
+    plan = TaskPlan.for_copilot([CopilotJob(filename="D:/jobs/1001.json", job_id=1001)])
+    types = [t["type"] for t in build_task_file(plan, "Official")["tasks"]]
+    for daily in ("Recruit", "Infrast", "Mall", "Award", "Fight"):
+        assert daily not in types
+
+
+def test_build_task_file_copilot_enabled_but_empty_jobs_raises():
+    # 绕过 for_copilot 手写坏计划 → executor 最后一道边界必须报错，不能静默只启动游戏。
+    from maa_remote.models import Copilot
+
+    plan = TaskPlan(action="run", startup=True, copilot=Copilot(enable=True, jobs=[]))
+    plan.recruit.enable = False
+    plan.infrast.enable = False
+    plan.mall.enable = False
+    plan.award.enable = False
+    with pytest.raises(ValueError, match="no jobs"):
+        build_task_file(plan, "Official")
 
 
 def test_build_task_file_explicit_medicine_and_stone():

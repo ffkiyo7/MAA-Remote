@@ -93,6 +93,8 @@ class Router:
             return RouteResult(kind="reply", reply=render_advise(plan_data, snapshot))
         if action == "ask_stage_selection":
             return self._start_selection(msg)
+        if action == "copilot":
+            return self._handle_copilot(msg, plan_data)
         if action == "clarify":
             return RouteResult(
                 kind="reply",
@@ -102,6 +104,27 @@ class Router:
             return RouteResult(kind="reply", reply="这个我帮不上，我只负责跑明日方舟日常/刷关卡。")
 
         return self._maybe_confirm(msg, TaskPlan.from_llm_dict(plan_data, self.cfg.maa.fight))
+
+    def _handle_copilot(self, msg: Msg, plan_data: dict[str, Any]) -> RouteResult:
+        """抄作业入口。
+
+        ⚠️ 临时 stub：#5 的抄作业 pending 流程（catalog→候选确认→落盘→执行）尚未接入。
+        这里**必须**拦住 copilot，绝不能让它落到 TaskPlan.from_llm_dict()——否则会被当成
+        普通日常计划，在 spend_only 下直接执行掉 recruit/infrast/mall/award。#5 会替换本方法。
+        """
+        copilot = plan_data.get("copilot") or {}
+        scope = copilot.get("scope")
+        stage = copilot.get("stage") or ""
+        if scope == "all_new":
+            target = "当期全部新活动关"
+        elif stage:
+            target = stage
+        else:
+            target = "（待选关）"
+        return RouteResult(
+            kind="reply",
+            reply=f"收到，抄作业打「{target}」——这个功能正在接入中，先记下了，马上就能用。",
+        )
 
     def _maybe_confirm(
         self,

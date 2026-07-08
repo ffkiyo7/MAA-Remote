@@ -530,3 +530,23 @@ def test_invalid_json_exhausts_retries_to_clarify(tmp_path):
     router = Router(_cfg(tmp_path), FakeLLM("still not json"), PROMPT, SCHEMA)
     rr = router.route(_msg("乱七八糟"))
     assert rr.kind == "reply" and "没太懂" in rr.reply
+
+
+def test_router_copilot_action_does_not_fall_through_to_daily_tasks(tmp_path):
+    # 阻断项回归：action=copilot 决不能落到 from_llm_dict 被当日常执行。
+    # 用 spend_only（复现 reviewer 报的场景）：若掉进 from_llm_dict，日常计划无花费 → 会直接 execute。
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    llm = FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "single", "stage": "HS-9"}}))
+    router = Router(cfg, llm, PROMPT, SCHEMA)
+    rr = router.route(_msg("帮我抄作业打 HS-9"))
+    assert rr.kind == "reply"          # 不是 execute
+    assert rr.plan is None             # 没有夹带可执行计划
+    assert "HS-9" in rr.reply
+
+
+def test_router_copilot_all_new_intercepted(tmp_path):
+    llm = FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "all_new", "stage": ""}}))
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
+    rr = router.route(_msg("新活动出了，帮我抄作业把新关都打了"))
+    assert rr.kind == "reply" and rr.plan is None

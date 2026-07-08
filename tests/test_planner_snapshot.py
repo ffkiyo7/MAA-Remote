@@ -74,6 +74,47 @@ def test_validator_rejects_run_action_in_confirm_mode(tmp_path):
         )
 
 
+# --- copilot action ---------------------------------------------------------
+
+def test_copilot_action_passes_schema_and_validator(tmp_path):
+    snapshot = _snapshot(tmp_path)
+    for data, text in [
+        ({"action": "copilot", "copilot": {"scope": "single", "stage": "HS-9"}}, "抄作业打 HS-9"),
+        ({"action": "copilot", "copilot": {"scope": "all_new", "stage": ""}}, "抄作业打新活动"),
+        ({"action": "copilot", "copilot": {"scope": "single", "stage": ""}}, "抄一份作业"),
+    ]:
+        validate(data, SCHEMA)  # schema 过
+        validate_planner_output(data, snapshot, text, "fresh")  # 语义过
+
+
+def test_copilot_missing_object_fails_schema(tmp_path):
+    with pytest.raises(ValidationError):
+        validate({"action": "copilot"}, SCHEMA)  # allOf 要求带 copilot 对象
+
+
+def test_copilot_stage_not_in_text_rejected(tmp_path):
+    snapshot = _snapshot(tmp_path)
+    # LLM 凭空捏了个用户没提过的关卡号 → 反幻觉拦截。
+    with pytest.raises(PlannerValidationError, match="does not appear"):
+        validate_planner_output(
+            {"action": "copilot", "copilot": {"scope": "single", "stage": "ZZ-9"}},
+            snapshot,
+            "帮我抄作业打一下",
+            "fresh",
+        )
+
+
+def test_copilot_bad_scope_rejected(tmp_path):
+    snapshot = _snapshot(tmp_path)
+    with pytest.raises(PlannerValidationError, match="scope"):
+        validate_planner_output(
+            {"action": "copilot", "copilot": {"scope": "everything"}},
+            snapshot,
+            "抄作业",
+            "fresh",
+        )
+
+
 def test_validator_allows_stage_explicitly_present_in_original_text(tmp_path):
     snapshot = _snapshot(tmp_path, stages=[])
     validate_planner_output(

@@ -37,6 +37,11 @@ def _describe(task: dict) -> str:
         parts.append(f"⚠️ 动用 {medicine} 瓶囤积理智药" if medicine > 0 else "不动囤药")
         parts.append(f"⚠️ 碎 {stone} 颗源石" if stone > 0 else "不碎石")
         return ",".join(parts)
+    if t == "Copilot":
+        if "copilot_list" in p:
+            n = len(p["copilot_list"])
+            return f"抄作业:自动战斗 {n} 关(作业集)"
+        return "抄作业:自动战斗(单关)"
     return t
 
 

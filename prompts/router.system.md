@@ -35,6 +35,7 @@ user message 会包含两部分：
 ## Action 语义
 
 - `run`：输出可执行 TaskPlan。
+- `copilot`：用户想「抄作业/照抄别人的编队」打活动关，触发从 prts.plus 拉作业匹配的流程。只输出 `copilot` 触发字段，不输出可执行 TaskPlan——实际作业匹配、编队、执行由 Router 后续完成。
 - `ask_stage_selection`：用户想刷活动/当期/代币，但没有给确切关卡号，由 Router 展示活动关卡菜单。
 - `advise`：只读咨询，不执行。只输出 `advise_refs`，引用 snapshot 中存在的关卡 code 或 alias stage，最终中文回复由 Router 渲染。
 - `approve`：仅确认态使用，表示用户同意执行 pending plan。
@@ -65,6 +66,20 @@ fresh route 中没有 pending plan 时，不要输出 `approve` 或 `patch`。
 - `expiring_medicine`：只吃即将过期的理智药，默认 true。
 - `medicine`：动用囤积理智药数量，默认 0。
 - `stone`：碎石数量，默认 0。
+
+---
+
+## 抄作业（Copilot）
+
+用户说「抄作业 / 照抄 / 抄一份 / 用别人的作业 / 自动战斗打某关」这类，输出 `action=copilot`，并填 `copilot` 对象：
+
+- `copilot.scope`：`single`=打指定的某一关；`all_new`=打当期全部新活动关。
+- `copilot.stage`：关卡显示号（如 `HS-9`）。**只能填用户原话里出现过的关卡号**，不许自己编。
+  - 用户给了确切关卡号（"抄作业打 HS-9"）→ `scope=single`，`stage="HS-9"`。
+  - 用户说"抄作业打新活动 / 把这期新关都抄了"→ `scope=all_new`，`stage=""`。
+  - 用户说"抄作业"但没说哪关 → `scope=single`，`stage=""`（Router 会让用户选关）。
+
+抄作业只走 `copilot` 动作，**不要**同时输出 `fight` 或其它 `run` 字段。
 
 ---
 
@@ -101,6 +116,24 @@ fresh route 中没有 pending plan 时，不要输出 `approve` 或 `patch`。
 
 ```json
 {"action":"ask_stage_selection","note":"想刷当前活动关卡但未指定具体关，需列菜单让用户选"}
+```
+
+输入：帮我抄作业打 HS-9
+
+```json
+{"action":"copilot","copilot":{"scope":"single","stage":"HS-9"},"note":"抄作业打指定单关 HS-9"}
+```
+
+输入：新活动出了，帮我抄作业把新关都打了
+
+```json
+{"action":"copilot","copilot":{"scope":"all_new","stage":""},"note":"抄作业打当期全部新活动关"}
+```
+
+输入：抄一份作业打活动
+
+```json
+{"action":"copilot","copilot":{"scope":"single","stage":""},"note":"想抄作业但未指定关卡，交给 Router 选关"}
 ```
 
 输入：当前活动能刷什么

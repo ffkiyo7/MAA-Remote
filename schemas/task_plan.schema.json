@@ -9,8 +9,25 @@
   "properties": {
     "action": {
       "type": "string",
-      "enum": ["run", "ask_stage_selection", "clarify", "reject", "advise", "approve", "patch"],
-      "description": "run=执行计划；ask_stage_selection=想刷活动但没定具体关，触发关卡菜单；clarify=意图不清需追问；reject=非任务/超范围；advise=只读建议；approve=确认态同意执行；patch=确认态修改 pending plan"
+      "enum": ["run", "copilot", "ask_stage_selection", "clarify", "reject", "advise", "approve", "patch"],
+      "description": "run=执行计划；copilot=抄作业打活动关，触发 prts.plus 作业匹配流程（不直接执行）；ask_stage_selection=想刷活动但没定具体关，触发关卡菜单；clarify=意图不清需追问；reject=非任务/超范围；advise=只读建议；approve=确认态同意执行；patch=确认态修改 pending plan"
+    },
+    "copilot": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "action=copilot 时使用；只是触发抄作业匹配流程，不含执行细节。stage 是关卡显示号，由 Router 侧 catalog 解析为 level_id 并查作业。",
+      "properties": {
+        "stage": {
+          "type": "string",
+          "description": "关卡显示号（如 HS-9）。空串=不指定单关，配合 scope=all_new 打当期全部新关；scope=single 但用户没给确切关卡时也可留空，由 Router 走选关"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["single", "all_new"],
+          "description": "single=抄作业打指定单关；all_new=抄作业打当期全部新活动关"
+        }
+      },
+      "required": ["scope"]
     },
     "startup": {
       "type": "boolean",
@@ -165,6 +182,10 @@
     {
       "if": { "properties": { "action": { "const": "advise" } } },
       "then": { "required": ["action", "advise_refs"] }
+    },
+    {
+      "if": { "properties": { "action": { "const": "copilot" } } },
+      "then": { "required": ["action", "copilot"] }
     }
   ]
 }
