@@ -1,6 +1,13 @@
 # MAA_remote 增量设计：飞书抄作业打活动关（prts.plus × maa copilot）
 
-> 状态：**设计草案（2026-07-07 对齐；2026-07-08 跑了首批 Spike）**——核心可行性已坐实：**P0(`maa run`+Copilot 组链)/S1-API/S5 ✅ 通过**；`spikes/copilot_catalog.py` 已完成 prts 查询→硬过滤→软打分的 headless 原型并留存 fixtures；**S2 已定案：copilot_list 不做"主页→地图",需自建导航 override**；S3/S4 未跑。详见 **§十一 Spike 执行记录** 和 `spikes/SPIKE_REPORT.md`。下一步：把 spike 原型产品化到 `maa_remote/copilot_catalog.py`，并补 S2 导航 / S4 练度来源。
+> 状态：**离线核心已实现（2026-07-08）**——把 spike 原型产品化进了 `maa_remote/`：
+> `config`([copilot]/[skland]) · `roster.py` · `copilot_catalog.py`(可注入 fetcher/analyzer/now) ·
+> `copilot_jobs.py`(落盘接缝) · `models`(CopilotJob/Copilot/for_copilot) · `schema`+`router.system.md`(action=copilot) ·
+> `router.py`(§六 事前确认 + 失败决策两个 pending 态 + catalog/roster seam) · `executor.py`(Copilot 任务链，Nav 显式空 seam) ·
+> `progress.py`(Copilot 标签)。全离线可单测（fixtures + fake runner；prts live smoke 走 `RUN_LIVE_SMOKE=1` opt-in）。
+> **游戏端仍未做**：S2 导航(头号阻塞)、#6 逐关汇报(接失败决策，要真 log)、#10 OperBox 练度、#9 skland(可选)、DeepSeek analyzer(可选)。
+> **回家那台怎么继续推进 → [docs/copilot-next-steps-home.md](../../copilot-next-steps-home.md)**。
+> 可行性证据仍见 **§十一 Spike 执行记录** 和 `spikes/SPIKE_REPORT.md`。
 > 前置：基础服务已跑通（飞书触发 → 模拟器 → maa-cli 日常 → 润色总结回飞书），见 `CONTEXT.md` / `SPEC.md`；进度推送+计划确认见 `2026-07-05-progress-and-confirm-design.md`。
 > 触发场景：DM「帮我抄作业打一下新的活动关」→ 自动从 prts.plus 拉作业 → maa-cli 自动战斗 → 逐步确认 → 汇报。
 

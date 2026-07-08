@@ -21,6 +21,15 @@ def test_parse_taskchain_error():
     assert e is not None and e.phase == "error" and "❌" in e.text and "刷理智" in e.text
 
 
+def test_parse_copilot_chain_labeled():
+    start = 'x | TaskChainStart {"taskchain":"Copilot","taskid":2,"uuid":"X"}'
+    e = parse_progress_line(start)
+    assert e is not None and e.phase == "start" and "抄作业" in e.text
+    err = 'x | TaskChainError {"taskchain":"Copilot","taskid":2,"uuid":"X"}'
+    e2 = parse_progress_line(err)
+    assert e2 is not None and e2.phase == "error" and "抄作业" in e2.text and "Copilot" not in e2.text
+
+
 def test_unknown_chain_falls_back_to_raw_name():
     line = 'x | TaskChainStart {"taskchain":"Roguelike","taskid":9,"uuid":"X"}'
     e = parse_progress_line(line)

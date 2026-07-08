@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 
 from maa_remote.config import load_config
@@ -532,21 +533,190 @@ def test_invalid_json_exhausts_retries_to_clarify(tmp_path):
     assert rr.kind == "reply" and "没太懂" in rr.reply
 
 
-def test_router_copilot_action_does_not_fall_through_to_daily_tasks(tmp_path):
-    # 阻断项回归：action=copilot 决不能落到 from_llm_dict 被当日常执行。
-    # 用 spend_only（复现 reviewer 报的场景）：若掉进 from_llm_dict，日常计划无花费 → 会直接 execute。
+# =========================== 抄作业（copilot）#5 =============================
+
+from maa_remote.copilot_catalog import Candidate, CatalogResult, StageResolutionError
+
+
+def _cand(cid, passed=True, risky=False, title="", opers=None, rating=10):
+    return Candidate(
+        id=cid, passed=passed, risky=risky, score=50.0, title=title,
+        issues=["✅ 无硬性缺口"], risks=(["⚠️ 技能等级未知"] if risky else []),
+        opers=opers or ["山 ✅"], groups=[], doc_signals=[], difficulty="",
+        uploader="u", upload_time="", views=0, hot_score=0.0,
+        rating_level=rating, rating_ratio=0.0, likes=0,
+    )
+
+
+def _result(cands, contents=None):
+    return CatalogResult(
+        stage_display="HS-9", level_id="act/hs/level_hs_09", collision=[],
+        total_fetched=len(cands), candidates=cands,
+        contents=contents or {c.id: {"opers": [{"name": "山"}]} for c in cands},
+    )
+
+
+def _catalog_fn(result):
+    def fn(stage, roster, level_id_override=None):
+        return result
+    return fn
+
+
+def _copilot_router(tmp_path, result, llm_action=None, **cfg_over):
     cfg = _cfg(tmp_path)
-    cfg.confirm.mode = "spend_only"
-    llm = FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "single", "stage": "HS-9"}}))
-    router = Router(cfg, llm, PROMPT, SCHEMA)
+    cfg.copilot.jobs_dir = str(tmp_path / "jobs")
+    for k, v in cfg_over.items():
+        setattr(cfg.copilot, k, v)
+    action = llm_action or {"action": "copilot", "copilot": {"scope": "single", "stage": "HS-9"}}
+    llm = FakeLLM(json.dumps(action))
+    fn = _catalog_fn(result) if result is not None else _raise_catalog
+    router = Router(cfg, llm, PROMPT, SCHEMA, copilot_catalog_fn=fn, roster_provider=lambda: None)
+    return cfg, router
+
+
+def test_router_copilot_single_stage_enters_confirm(tmp_path):
+    _, router = _copilot_router(tmp_path, _result([_cand(101, title="低配三星"), _cand(102)]))
     rr = router.route(_msg("帮我抄作业打 HS-9"))
-    assert rr.kind == "reply"          # 不是 execute
-    assert rr.plan is None             # 没有夹带可执行计划
-    assert "HS-9" in rr.reply
-
-
-def test_router_copilot_all_new_intercepted(tmp_path):
-    llm = FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "all_new", "stage": ""}}))
-    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA)
-    rr = router.route(_msg("新活动出了，帮我抄作业把新关都打了"))
     assert rr.kind == "reply" and rr.plan is None
+    assert "HS-9" in rr.reply and "#101" in rr.reply
+    assert "其余候选" in rr.reply and "#102" in rr.reply
+
+
+def test_router_copilot_does_not_fall_through_to_daily_tasks(tmp_path):
+    # 阻断项回归：spend_only 下 copilot 决不能落到 from_llm_dict 被当日常直接 execute。
+    _, router = _copilot_router(tmp_path, _result([_cand(101)]))
+    router.cfg.confirm.mode = "spend_only"
+    rr = router.route(_msg("帮我抄作业打 HS-9"))
+    assert rr.kind == "reply" and rr.plan is None
+
+
+def test_router_copilot_select_top_candidate_executes(tmp_path):
+    _, router = _copilot_router(tmp_path, _result([_cand(101), _cand(102)]))
+    router.route(_msg("帮我抄作业打 HS-9"))
+    rr = router.route(_msg("1"))
+    assert rr.kind == "execute"
+    assert rr.plan.copilot.enable is True
+    assert rr.plan.copilot.jobs[0].job_id == 101
+    assert os.path.exists(rr.plan.copilot.jobs[0].filename)
+
+
+def test_router_copilot_select_alternate_number(tmp_path):
+    _, router = _copilot_router(tmp_path, _result([_cand(101), _cand(102)]))
+    router.route(_msg("帮我抄作业打 HS-9"))
+    rr = router.route(_msg("2"))
+    assert rr.kind == "execute" and rr.plan.copilot.jobs[0].job_id == 102
+
+
+def test_router_copilot_cancel(tmp_path):
+    _, router = _copilot_router(tmp_path, _result([_cand(101)]))
+    router.route(_msg("帮我抄作业打 HS-9"))
+    rr = router.route(_msg("取消"))
+    assert rr.kind == "reply" and "取消" in rr.reply
+    # 会话已清：再回 "1" 不应再触发执行。
+    assert router.route(_msg("1")).kind == "reply"
+
+
+def test_router_copilot_no_passing_candidates(tmp_path):
+    _, router = _copilot_router(tmp_path, _result([_cand(101, passed=False)]))
+    rr = router.route(_msg("帮我抄作业打 HS-9"))
+    assert rr.kind == "reply" and "没有" in rr.reply
+    assert router.route(_msg("1")).kind == "reply"  # 没建会话
+
+
+def test_router_copilot_unknown_stage(tmp_path):
+    cfg = _cfg(tmp_path)
+
+    def boom(stage, roster, level_id_override=None):
+        raise StageResolutionError("no")
+
+    router = Router(
+        cfg, FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "single", "stage": "HS-9"}})),
+        PROMPT, SCHEMA, copilot_catalog_fn=boom, roster_provider=lambda: None,
+    )
+    rr = router.route(_msg("帮我抄作业打 HS-9"))
+    assert rr.kind == "reply" and "没找到关卡" in rr.reply
+
+
+def test_router_copilot_missing_catalog_file(tmp_path):
+    def boom(stage, roster, level_id_override=None):
+        raise FileNotFoundError("stage_catalog.json")
+
+    router = Router(
+        _cfg(tmp_path),
+        FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "single", "stage": "HS-9"}})),
+        PROMPT, SCHEMA, copilot_catalog_fn=boom, roster_provider=lambda: None,
+    )
+    rr = router.route(_msg("帮我抄作业打 HS-9"))
+    assert rr.kind == "reply" and "索引" in rr.reply
+
+
+def test_router_copilot_all_new_not_yet(tmp_path):
+    llm = FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "all_new", "stage": ""}}))
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA, roster_provider=lambda: None)
+    rr = router.route(_msg("新活动出了，帮我抄作业把新关都打了"))
+    assert rr.kind == "reply" and rr.plan is None and "批量" in rr.reply
+
+
+def test_router_copilot_single_without_stage_asks(tmp_path):
+    llm = FakeLLM(json.dumps({"action": "copilot", "copilot": {"scope": "single", "stage": ""}}))
+    router = Router(_cfg(tmp_path), llm, PROMPT, SCHEMA, roster_provider=lambda: None)
+    rr = router.route(_msg("抄一份作业打活动"))
+    assert rr.kind == "reply" and "哪一关" in rr.reply
+
+
+def test_router_copilot_session_ttl_expires(tmp_path):
+    clock = {"t": 1000.0}
+    _, router = _copilot_router(tmp_path, _result([_cand(101)]))
+    router.now_fn = lambda: clock["t"]
+    router.route(_msg("帮我抄作业打 HS-9"))
+    clock["t"] += router.cfg.copilot.confirm_ttl_s + 1  # 过期
+    rr = router.route(_msg("1"))  # 过期后 "1" 不再选候选，落到 fresh 路由
+    assert rr.kind == "reply"
+
+
+# --- 失败后决策（§六②，injected failure event）---
+
+def test_start_failure_decision_builds_message_and_pending(tmp_path):
+    _, router = _copilot_router(tmp_path, _result([_cand(101)]))
+    msg = router.start_failure_decision(
+        "oc_1", "HS-7", _result([_cand(201), _cand(202)]),
+        alternatives=[_cand(201), _cand(202)],
+        remaining_stages=["HS-8", "HS-9"], detail="打到 2:31 暴毙，耗理智 15",
+    )
+    assert "HS-7" in msg and "换作业 #201" in msg and "跳过" in msg
+    assert "HS-8" in msg  # 剩余关卡
+
+
+def test_failure_decision_change_job_executes(tmp_path):
+    _, router = _copilot_router(tmp_path, None)
+    router.cfg.copilot.jobs_dir = str(tmp_path / "jobs")
+    router.start_failure_decision(
+        "oc_1", "HS-7", _result([_cand(201), _cand(202)]),
+        alternatives=[_cand(201), _cand(202)], remaining_stages=["HS-8"],
+    )
+    rr = router.route(_msg("1"))
+    assert rr.kind == "execute" and rr.plan.copilot.jobs[0].job_id == 201
+
+
+def test_failure_decision_skip(tmp_path):
+    _, router = _copilot_router(tmp_path, None)
+    router.start_failure_decision(
+        "oc_1", "HS-7", _result([_cand(201)]), alternatives=[_cand(201)],
+        remaining_stages=["HS-8", "HS-9"],
+    )
+    rr = router.route(_msg("跳过"))
+    assert rr.kind == "reply" and "跳过 HS-7" in rr.reply and "HS-8" in rr.reply
+    # 不能假装自动续跑：文案必须明说续跑还没接入（#6 未接线前的诚实边界）。
+    assert "自动续跑还没接入" in rr.reply
+    assert router.route(_msg("1")).kind == "reply"  # 会话已清，不残留续跑意图
+
+
+def test_failure_decision_cancel(tmp_path):
+    _, router = _copilot_router(tmp_path, None)
+    router.start_failure_decision("oc_1", "HS-7", _result([_cand(201)]), alternatives=[_cand(201)])
+    rr = router.route(_msg("取消"))
+    assert rr.kind == "reply" and "收工" in rr.reply
+
+
+def _raise_catalog(stage, roster, level_id_override=None):
+    raise AssertionError("catalog_fn should not be called in this test")

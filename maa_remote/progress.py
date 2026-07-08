@@ -23,6 +23,7 @@ TASKCHAIN_LABELS: dict[str, tuple[str, str]] = {
     "Mall": ("🛒", "信用商店"),
     "Award": ("🎁", "领奖励"),
     "Fight": ("⚔️", "刷理智"),
+    "Copilot": ("🎯", "抄作业自动战斗"),
     "CloseDown": ("🚪", "关闭游戏"),
 }
 
