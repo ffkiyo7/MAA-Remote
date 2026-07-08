@@ -92,6 +92,14 @@ def test_copilot_missing_object_fails_schema(tmp_path):
         validate({"action": "copilot"}, SCHEMA)  # allOf 要求带 copilot 对象
 
 
+def test_non_copilot_action_cannot_carry_copilot_payload(tmp_path):
+    with pytest.raises(ValidationError):
+        validate(
+            {"action": "run", "copilot": {"scope": "single", "stage": "HS-9"}},
+            SCHEMA,
+        )
+
+
 def test_copilot_stage_not_in_text_rejected(tmp_path):
     snapshot = _snapshot(tmp_path)
     # LLM 凭空捏了个用户没提过的关卡号 → 反幻觉拦截。

@@ -590,6 +590,28 @@ def test_router_copilot_does_not_fall_through_to_daily_tasks(tmp_path):
     assert rr.kind == "reply" and rr.plan is None
 
 
+def test_router_run_action_with_copilot_payload_is_rejected(tmp_path):
+    cfg = _cfg(tmp_path)
+    cfg.confirm.mode = "spend_only"
+    llm = FakeLLM(
+        json.dumps({"action": "run", "copilot": {"scope": "single", "stage": "HS-9"}})
+    )
+    router = Router(
+        cfg,
+        llm,
+        PROMPT,
+        SCHEMA,
+        copilot_catalog_fn=_raise_catalog,
+        roster_provider=lambda: None,
+    )
+
+    rr = router.route(_msg("帮我抄作业打 HS-9"))
+
+    assert rr.kind == "reply"
+    assert rr.plan is None
+    assert len(llm.calls) == cfg.llm.max_retries + 1
+
+
 def test_router_copilot_select_top_candidate_executes(tmp_path):
     _, router = _copilot_router(tmp_path, _result([_cand(101), _cand(102)]))
     router.route(_msg("帮我抄作业打 HS-9"))
@@ -685,6 +707,7 @@ def test_start_failure_decision_builds_message_and_pending(tmp_path):
     )
     assert "HS-7" in msg and "换作业 #201" in msg and "跳过" in msg
     assert "HS-8" in msg  # 剩余关卡
+    assert "自动续跑还没接入" in msg
 
 
 def test_failure_decision_change_job_executes(tmp_path):

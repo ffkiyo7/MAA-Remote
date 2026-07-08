@@ -186,6 +186,10 @@
     {
       "if": { "properties": { "action": { "const": "copilot" } } },
       "then": { "required": ["action", "copilot"] }
+    },
+    {
+      "if": { "required": ["copilot"] },
+      "then": { "properties": { "action": { "const": "copilot" } } }
     }
   ]
 }

@@ -94,7 +94,7 @@ def build_failure_message(session: CopilotSession) -> str:
     for i, c in enumerate(session.selectable, 1):
         title = f"「{c.title}」" if c.title else ""
         lines.append(f"  {i}. 换作业 #{c.id}{title} 重打 {session.stage_display}")
-    lines.append("  回「跳过」——不打这关，继续后面的")
+    lines.append("  回「跳过」——不打这关；自动续跑还没接入，后续需单独再叫我")
     lines.append("  回「取消」——收工")
     return "\n".join(lines)
 
