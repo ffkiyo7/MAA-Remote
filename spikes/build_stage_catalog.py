@@ -5,14 +5,23 @@
 产出: spikes/fixtures/stage_catalog.json / activity_stage_map.json
 """
 
-import json, os, time, urllib.request
+import json, os, sys, time, urllib.request
 
 API = "https://prts.maa.plus/arknights/level"
 OUT = os.path.join(os.path.dirname(__file__), "fixtures")
 os.makedirs(OUT, exist_ok=True)
 
 
+def configure_console_encoding() -> None:
+    """Keep Windows GBK consoles from crashing on emoji/CJK spike output."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 def main():
+    configure_console_encoding()
     print("[spike:stage_catalog] fetch /arknights/level ...")
     req = urllib.request.Request(API, headers={"User-Agent": "maa-remote-spike"})
     with urllib.request.urlopen(req, timeout=60) as r:

@@ -33,6 +33,14 @@ UA = "maa-remote-spike"
 OUT = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
+def configure_console_encoding() -> None:
+    """Keep Windows GBK consoles from crashing on emoji/CJK spike output."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 # =============================================================================
 # 皮肤别名 (§评审 P1: 作业里干员常带皮肤前缀, 需归一到规范名)
 # =============================================================================
@@ -394,6 +402,7 @@ def analyze_doc(content: dict) -> dict:
 # =============================================================================
 
 def main():
+    configure_console_encoding()
     if len(sys.argv) < 2:
         sys.exit("用法: python copilot_catalog.py <显示号> [--limit N] [--roster roster.json] [--level-id LID]")
     stage_display = sys.argv[1]
