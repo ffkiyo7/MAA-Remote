@@ -95,6 +95,22 @@ class ConfirmConfig:
 
 
 @dataclass
+class CopilotConfig:
+    candidates_limit: int
+    confirm_ttl_s: int
+    formation_index: int
+    jobs_dir: str
+    stage_catalog_json: str
+    rating_min: int
+
+
+@dataclass
+class SklandConfig:
+    enable: bool
+    token: str
+
+
+@dataclass
 class Config:
     lark: LarkConfig
     llm: LLMConfig
@@ -103,6 +119,8 @@ class Config:
     runtime: RuntimeConfig
     progress: ProgressConfig
     confirm: ConfirmConfig
+    copilot: CopilotConfig
+    skland: SklandConfig
 
 
 def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
@@ -118,6 +136,8 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
     runtime = data["runtime"]
     progress = data.get("progress", {})
     confirm = data.get("confirm", {})
+    copilot = data.get("copilot", {})
+    skland = data.get("skland", {})
 
     return Config(
         lark=LarkConfig(
@@ -181,6 +201,18 @@ def load_config(path: str, env: Mapping[str, str] | None = None) -> Config:
         confirm=ConfirmConfig(
             mode=confirm.get("mode", "always"),
             ttl_s=confirm.get("ttl_s", 600),
+        ),
+        copilot=CopilotConfig(
+            candidates_limit=copilot.get("candidates_limit", 10),
+            confirm_ttl_s=copilot.get("confirm_ttl_s", 1800),
+            formation_index=copilot.get("formation_index", 0),
+            jobs_dir=_expand(copilot.get("jobs_dir", ""), env),
+            stage_catalog_json=_expand(copilot.get("stage_catalog_json", ""), env),
+            rating_min=copilot.get("rating_min", 0),
+        ),
+        skland=SklandConfig(
+            enable=skland.get("enable", False),
+            token=env.get(skland.get("token_env", "SKLAND_TOKEN"), ""),
         ),
     )
 

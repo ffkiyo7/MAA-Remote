@@ -1,0 +1,58 @@
+{
+  "status_code": 200,
+  "data": {
+    "total": 4,
+    "has_next": false,
+    "page": 1,
+    "data": [
+      {
+        "id": 1001,
+        "uploader": "u1001",
+        "views": 18000,
+        "hot_score": 4200.0,
+        "rating_level": 10,
+        "rating_ratio": 0.9,
+        "like": 90,
+        "dislike": 10,
+        "upload_time": "2026-07-01T00:00:00Z",
+        "content": "{\"stage_name\": \"\", \"opers\": [{\"name\": \"山\", \"skill\": 3}, {\"name\": \"银灰\", \"skill\": 2}], \"groups\": [], \"doc\": {\"title\": \"低配三星\", \"details\": \"无专精也能过\"}, \"difficulty\": 0}"
+      },
+      {
+        "id": 1002,
+        "uploader": "u1002",
+        "views": 9000,
+        "hot_score": 800.0,
+        "rating_level": 8,
+        "rating_ratio": 0.9,
+        "like": 50,
+        "dislike": 5,
+        "upload_time": "2026-07-01T00:00:00Z",
+        "content": "{\"stage_name\": \"\", \"opers\": [{\"name\": \"陈\", \"skill\": 1}], \"groups\": [], \"doc\": {}, \"difficulty\": 0}"
+      },
+      {
+        "id": 1003,
+        "uploader": "u1003",
+        "views": 12000,
+        "hot_score": 1500.0,
+        "rating_level": 9,
+        "rating_ratio": 0.9,
+        "like": 70,
+        "dislike": 5,
+        "upload_time": "2026-07-01T00:00:00Z",
+        "content": "{\"stage_name\": \"\", \"opers\": [{\"name\": \"能天使\", \"skill\": 1, \"requirements\": {\"skill_level\": 7}}], \"groups\": [], \"doc\": {}, \"difficulty\": 0}"
+      },
+      {
+        "id": 1004,
+        "uploader": "u1004",
+        "views": 3000,
+        "hot_score": 200.0,
+        "rating_level": 6,
+        "rating_ratio": 0.9,
+        "like": 30,
+        "dislike": 3,
+        "upload_time": "2026-07-01T00:00:00Z",
+        "content": "{\"stage_name\": \"\", \"opers\": [], \"groups\": [{\"name\": \"输出\", \"opers\": [{\"name\": \"陈\"}, {\"name\": \"艾雅法拉\"}]}], \"doc\": {}, \"difficulty\": 0}"
+      }
+    ]
+  }
+}
