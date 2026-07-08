@@ -86,6 +86,8 @@ def validate_planner_output(
         return
     if action == "advise":
         _validate_advise_refs(plan_data, snapshot)
+    if action == "copilot":
+        _validate_copilot_payload(plan_data, original_text)
 
 
 def render_advise(plan_data: dict[str, Any], snapshot: dict[str, Any]) -> str:
@@ -158,6 +160,26 @@ def _validate_stage_payload(
     raise PlannerValidationError(
         f"fight.stage={stage!r} is not an alias stage and does not appear in the original user message"
     )
+
+
+def _validate_copilot_payload(plan_data: dict[str, Any], original_text: str) -> None:
+    """copilot 触发校验：scope 合法 + stage 不能凭空捏造。
+
+    stage 是关卡显示号（可能是当期新活动，未必在 aliases/open_activity_stages 里），
+    所以不校验它属于快照，只要求它确实出现在用户原话里（反幻觉，同 fight.stage 纪律）。
+    scope=single 但没给 stage 是允许的——交给 Router 走选关，不在此报错。
+    """
+    copilot = plan_data.get("copilot") or {}
+    scope = copilot.get("scope")
+    if scope not in ("single", "all_new"):
+        raise PlannerValidationError(
+            f"copilot.scope must be 'single' or 'all_new', got {scope!r}"
+        )
+    stage = copilot.get("stage") or ""
+    if stage and not _stage_appears_in_original_text(str(stage), original_text):
+        raise PlannerValidationError(
+            f"copilot.stage={stage!r} does not appear in the original user message"
+        )
 
 
 def _validate_advise_refs(plan_data: dict[str, Any], snapshot: dict[str, Any]) -> None:

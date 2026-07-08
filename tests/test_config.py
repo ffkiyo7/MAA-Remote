@@ -187,3 +187,45 @@ def test_llm_thinking_keys_override(tmp_path):
     cfg = load_config(path, env={"DEEPSEEK_API_KEY": "k", "LOCALAPPDATA": "x", "APPDATA": "y"})
     assert cfg.llm.thinking == "disabled"
     assert cfg.llm.reasoning_effort == "max"
+
+
+def test_copilot_and_skland_defaults_when_sections_missing(tmp_path):
+    cfg = load_config(_example_without(tmp_path, "copilot", "skland"), env=_ENV)
+    assert cfg.copilot.candidates_limit == 10
+    assert cfg.copilot.confirm_ttl_s == 1800
+    assert cfg.copilot.formation_index == 0
+    assert cfg.copilot.jobs_dir == ""
+    assert cfg.copilot.stage_catalog_json == ""
+    assert cfg.copilot.rating_min == 0
+    assert cfg.skland.enable is False
+    assert cfg.skland.token == ""
+
+
+def test_copilot_section_overrides(tmp_path):
+    path = _example_without(tmp_path, "copilot", "skland")
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(
+            "\n[copilot]\n"
+            "candidates_limit = 5\n"
+            "confirm_ttl_s = 900\n"
+            "formation_index = 2\n"
+            'jobs_dir = "%APPDATA%/loong/maa/config/copilot"\n'
+            'stage_catalog_json = "D:/cat/stage_catalog.json"\n'
+            "rating_min = 8\n"
+        )
+    cfg = load_config(path, env=_ENV)
+    assert cfg.copilot.candidates_limit == 5
+    assert cfg.copilot.confirm_ttl_s == 900
+    assert cfg.copilot.formation_index == 2
+    assert cfg.copilot.jobs_dir == "y/loong/maa/config/copilot"
+    assert cfg.copilot.stage_catalog_json == "D:/cat/stage_catalog.json"
+    assert cfg.copilot.rating_min == 8
+
+
+def test_skland_token_resolved_from_env_name(tmp_path):
+    path = _example_without(tmp_path, "copilot", "skland")
+    with open(path, "a", encoding="utf-8") as f:
+        f.write('\n[skland]\nenable = true\ntoken_env = "MY_SKLAND"\n')
+    cfg = load_config(path, env={**_ENV, "MY_SKLAND": "cred-abc"})
+    assert cfg.skland.enable is True
+    assert cfg.skland.token == "cred-abc"

@@ -5,7 +5,7 @@
 - 设计背景与决策：[CONTEXT.md](CONTEXT.md)
 - 详细设计（模块接口/配置/错误矩阵）：[SPEC.md](SPEC.md)
 - 实现计划（照着逐任务执行）：[docs/plans/2026-07-04-maa-remote.md](docs/plans/2026-07-04-maa-remote.md)
-- 抄作业打活动关（设计草案，首批 headless Spike 已完成）：[docs/superpowers/specs/2026-07-07-copilot-auto-battle-design.md](docs/superpowers/specs/2026-07-07-copilot-auto-battle-design.md)，证据见 [spikes/SPIKE_REPORT.md](spikes/SPIKE_REPORT.md)
+- 抄作业打活动关：设计见 [docs/superpowers/specs/2026-07-07-copilot-auto-battle-design.md](docs/superpowers/specs/2026-07-07-copilot-auto-battle-design.md)，Spike 证据见 [spikes/SPIKE_REPORT.md](spikes/SPIKE_REPORT.md)。**离线核心（匹配/确认/落盘/任务链/进度）已实现并单测**；游戏端还差导航(S2)、逐关汇报(#6)、练度识别(#10) —— 回家那台怎么继续见 [docs/copilot-next-steps-home.md](docs/copilot-next-steps-home.md)
 
 ## 前置依赖
 

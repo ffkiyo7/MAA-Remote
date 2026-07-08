@@ -20,3 +20,6 @@
 {"input":"帮我写个 Python 脚本","expected":{"action":"reject"}}
 {"input":"帮我弄一下","expected":{"action":"clarify"}}
 {"input":"搞快点","expected":{"action":"clarify"}}
+{"input":"帮我抄作业打 HS-9","expected":{"action":"copilot","copilot":{"scope":"single","stage":"HS-9"}}}
+{"input":"新活动出了，帮我抄作业把新关都打了","expected":{"action":"copilot","copilot":{"scope":"all_new"}}}
+{"input":"抄一份作业打活动","expected":{"action":"copilot","copilot":{"scope":"single"}}}

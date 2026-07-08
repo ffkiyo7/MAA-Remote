@@ -1,5 +1,7 @@
+import pytest
+
 from maa_remote.config import FightConfig
-from maa_remote.models import TaskPlan
+from maa_remote.models import CopilotJob, TaskPlan
 
 
 DEF = FightConfig(stage="", expiring_medicine=True, medicine=0, stone=0)
@@ -62,3 +64,33 @@ def test_clarify_carries_question():
     )
     assert plan.action == "clarify"
     assert plan.clarify_question == "跑日常还是刷关?"
+
+
+def test_copilot_disabled_by_default_on_daily_and_llm_plans():
+    daily = TaskPlan.daily(DEF, ["fight"])
+    assert daily.copilot.enable is False
+    assert daily.copilot.jobs == []
+    llm = TaskPlan.from_llm_dict({"action": "run", "fight": {"enable": True}}, DEF)
+    assert llm.copilot.enable is False
+
+
+def test_for_copilot_builds_copilot_only_plan():
+    jobs = [CopilotJob(filename="/x/1001.json", stage_name="obt/main/level_main_01-07")]
+    plan = TaskPlan.for_copilot(jobs, formation_index=2, note="抄作业打 1-7")
+    assert plan.startup is True
+    assert plan.copilot.enable is True
+    assert plan.copilot.jobs == jobs
+    assert plan.copilot.formation is True
+    assert plan.copilot.formation_index == 2
+    # 日常子任务全关，别掺进抄作业执行。
+    assert plan.fight.enable is False
+    assert plan.recruit.enable is False
+    assert plan.infrast.enable is False
+    assert plan.mall.enable is False
+    assert plan.award.enable is False
+
+
+def test_for_copilot_rejects_empty_jobs():
+    # 空 jobs + enable=True 是不可执行计划 → 挡在模型层。
+    with pytest.raises(ValueError):
+        TaskPlan.for_copilot([])

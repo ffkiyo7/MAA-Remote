@@ -110,7 +110,47 @@ def build_task_file(plan: TaskPlan, client: str) -> dict:
         if plan.fight.series is not None:
             fight_params["series"] = plan.fight.series
         tasks.append({"type": "Fight", "params": fight_params})
+    if plan.copilot.enable:
+        # 最后一道边界：enable 但空 jobs 是坏计划，绝不静默跳过成"只启动游戏"。
+        # for_copilot 已挡一层，这里防 router/patch/手写计划绕过 constructor。
+        if not plan.copilot.jobs:
+            raise ValueError("copilot plan enabled but has no jobs")
+        tasks.extend(_nav_tasks(plan.copilot))
+        tasks.append(_copilot_task(plan.copilot))
     return {"tasks": tasks}
+
+
+def _nav_tasks(copilot) -> list[dict]:
+    """主页→活动地图导航（S2）的 seam。
+
+    ⚠️ 当前返回 []：S2「主页→终端→活动地图」override 尚未实现（实测 Copilot/copilot_list
+    都不含这段，会卡在主页，见设计文档 §十一）。所以现在 StartUp 之后直接接 Copilot，
+    **依赖游戏已停在编队/地图界面**——这是 pre-S2 的已知现状，不是假装能导航。
+    S2 落地后在此返回导航任务序列（对起始态无假设）。
+    """
+    return []
+
+
+def _copilot_task(copilot) -> dict:
+    """按 §2.2 集成协议出 Copilot 任务。
+
+    单 job 且非突袭 → filename 模式（S4b 实测过的路径）；
+    多 job 或突袭 → copilot_list（每项带 stage_name/is_raid，地图内自动切关）。
+    """
+    params = {
+        "formation": copilot.formation,
+        "formation_index": copilot.formation_index,
+        "use_sanity_potion": copilot.use_sanity_potion,
+    }
+    jobs = copilot.jobs
+    if len(jobs) == 1 and not jobs[0].is_raid:
+        params["filename"] = jobs[0].filename
+    else:
+        params["copilot_list"] = [
+            {"filename": j.filename, "stage_name": j.stage_name, "is_raid": j.is_raid}
+            for j in jobs
+        ]
+    return {"type": "Copilot", "params": params}
 
 
 def ensure_emulator(
